@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "game_core",
+    "game_tui"
+]
+resolver = "2"
