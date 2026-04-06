@@ -43,3 +43,86 @@ impl Card {
         self.hp = (self.hp + amount).min(self.max_hp);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Test healing increases HP up to max
+    #[test]
+    fn test_card_heal() {
+        let mut card = Card::new(Suit::Spades, Rank::Ace);
+        card.take_damage(5);
+        assert_eq!(card.hp, 9);
+
+        card.heal(3);
+        assert_eq!(card.hp, 12);
+        assert_eq!(card.max_hp, 14);
+    }
+
+    /// Test healing cannot exceed max HP
+    #[test]
+    fn test_card_heal_over_max() {
+        let mut card = Card::new(Suit::Hearts, Rank::King);
+        card.take_damage(1);
+        assert_eq!(card.hp, 12);
+
+        card.heal(10);
+        assert_eq!(card.hp, 13);
+        assert_eq!(card.max_hp, 13);
+    }
+
+    /// Test healing with zero does nothing
+    #[test]
+    fn test_card_heal_zero() {
+        let mut card = Card::new(Suit::Diamonds, Rank::Jack);
+        let hp_before = card.hp;
+        card.heal(0);
+        assert_eq!(card.hp, hp_before);
+    }
+
+    /// Test damage of 1
+    #[test]
+    fn test_card_take_damage_one_hit() {
+        let mut card = Card::new(Suit::Clubs, Rank::Four);
+        let damage = card.take_damage(1);
+        assert_eq!(damage, 1);
+        assert_eq!(card.hp, 3);
+    }
+
+    /// Full damage sequence: take damage and heal
+    #[test]
+    fn test_card_damage_then_heal() {
+        let mut card = Card::new(Suit::Spades, Rank::Nine);
+        assert_eq!(card.hp, 9);
+
+        card.take_damage(4);
+        assert_eq!(card.hp, 5);
+
+        card.heal(3);
+        assert_eq!(card.hp, 8);
+
+        card.take_damage(8);
+        assert!(!card.is_alive());
+    }
+
+    /// Test card reaches zero HP
+    #[test]
+    fn test_card_hp_zero() {
+        let mut card = Card::new(Suit::Hearts, Rank::Two);
+        assert_eq!(card.hp, 2);
+        card.take_damage(2);
+        assert_eq!(card.hp, 0);
+        assert!(!card.is_alive());
+    }
+
+    /// Test exact damage then full heal
+    #[test]
+    fn test_card_exact_damage_then_full_heal() {
+        let mut card = Card::new(Suit::Spades, Rank::Ace);
+        card.take_damage(14);
+        assert_eq!(card.hp, 0);
+        card.heal(14);
+        assert_eq!(card.hp, 14);
+    }
+}

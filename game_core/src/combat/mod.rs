@@ -99,3 +99,142 @@ pub fn apply_combat_damage(attacker: &Card, defender: &mut Card) -> (u8, CombatR
 
     (actual_damage, result)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::types::Rank;
+
+    #[test]
+    fn test_damage_multiplier_same_archetype() {
+        // Rock vs Rock
+        assert_eq!(
+            calculate_damage_multiplier(Suit::Hearts, Suit::Hearts),
+            (1.0, 0.0)
+        );
+        // Paper vs Paper
+        assert_eq!(
+            calculate_damage_multiplier(Suit::Diamonds, Suit::Diamonds),
+            (1.0, 0.0)
+        );
+        // Scissors vs Scissors
+        assert_eq!(
+            calculate_damage_multiplier(Suit::Clubs, Suit::Clubs),
+            (1.0, 0.0)
+        );
+        // Infantry vs Infantry
+        assert_eq!(
+            calculate_damage_multiplier(Suit::Spades, Suit::Spades),
+            (1.0, 0.0)
+        );
+    }
+
+    #[test]
+    fn test_damage_multiplier_rps_dominant_vs_lesser() {
+        // Rock dominates Scissors
+        assert_eq!(
+            calculate_damage_multiplier(Suit::Hearts, Suit::Clubs),
+            (0.5, 0.3)
+        );
+        // Scissors dominates Paper
+        assert_eq!(
+            calculate_damage_multiplier(Suit::Clubs, Suit::Diamonds),
+            (0.5, 0.3)
+        );
+        // Paper dominates Rock
+        assert_eq!(
+            calculate_damage_multiplier(Suit::Diamonds, Suit::Hearts),
+            (0.5, 0.3)
+        );
+    }
+
+    #[test]
+    fn test_damage_multiplier_rps_lesser_vs_dominant() {
+        // Scissors vs Rock (defender dominates)
+        assert_eq!(
+            calculate_damage_multiplier(Suit::Clubs, Suit::Hearts),
+            (2.0, 0.25)
+        );
+        // Paper vs Scissors (defender dominates)
+        assert_eq!(
+            calculate_damage_multiplier(Suit::Diamonds, Suit::Clubs),
+            (2.0, 0.25)
+        );
+        // Rock vs Paper (defender dominates)
+        assert_eq!(
+            calculate_damage_multiplier(Suit::Hearts, Suit::Diamonds),
+            (2.0, 0.25)
+        );
+    }
+
+    #[test]
+    fn test_damage_multiplier_infantry_vulnerable() {
+        // Infantry vs any = 1x damage with 25% special chance
+        assert_eq!(
+            calculate_damage_multiplier(Suit::Spades, Suit::Hearts),
+            (1.0, 0.25)
+        ); // Infantry attacks Rock
+        assert_eq!(
+            calculate_damage_multiplier(Suit::Hearts, Suit::Spades),
+            (1.0, 0.25)
+        ); // Rock attacks Infantry
+        assert_eq!(
+            calculate_damage_multiplier(Suit::Spades, Suit::Diamonds),
+            (1.0, 0.25)
+        ); // Infantry attacks Paper
+        assert_eq!(
+            calculate_damage_multiplier(Suit::Diamonds, Suit::Spades),
+            (1.0, 0.25)
+        ); // Paper attacks Infantry
+    }
+
+    #[test]
+    fn test_apply_combat_damage_deterministic() {
+        let mut attacker = Card::new(Suit::Hearts, Rank::Ten); // 10 HP Rock
+        let mut defender = Card::new(Suit::Clubs, Rank::Five); // 5 HP Scissors (Rock > Scissors)
+
+        // Rock vs Scissors: 0.5x damage, 30% absorb chance
+        let initial_hp = defender.hp;
+        let (damage, result) = apply_combat_damage(&attacker, &mut defender);
+
+        // Damage should be applied (5 * 0.5 = 2.5 -> 2 base damage, possibly modified by special)
+        assert!(damage <= initial_hp);
+        assert_eq!(defender.hp, initial_hp - damage);
+        assert!(matches!(
+            result,
+            CombatResult::Normal | CombatResult::Absorb
+        ));
+    }
+
+    #[test]
+    fn test_apply_combat_damage_infantry_special() {
+        let mut attacker = Card::new(Suit::Hearts, Rank::Eight); // 8 HP Rock
+        let mut defender = Card::new(Suit::Spades, Rank::Four); // 4 HP Infantry
+
+        // Test that damage is applied
+        let initial_hp = defender.hp;
+        let (damage, result) = apply_combat_damage(&attacker, &mut defender);
+
+        assert!(damage <= initial_hp);
+        assert_eq!(defender.hp, initial_hp - damage);
+        // Result should be Normal, Absorb, or CriticalHit based on RNG
+        assert!(matches!(
+            result,
+            CombatResult::Normal | CombatResult::Absorb | CombatResult::CriticalHit
+        ));
+    }
+
+    #[test]
+    fn test_combat_result_enum() {
+        assert!(matches!(CombatResult::Normal, CombatResult::Normal));
+        assert!(matches!(
+            CombatResult::CriticalHit,
+            CombatResult::CriticalHit
+        ));
+        assert!(matches!(CombatResult::Absorb, CombatResult::Absorb));
+
+        assert_ne!(CombatResult::Normal, CombatResult::CriticalHit);
+        assert_ne!(CombatResult::Normal, CombatResult::Absorb);
+        assert_ne!(CombatResult::CriticalHit, CombatResult::Absorb);
+    }
+}
