@@ -74,7 +74,15 @@ None currently. Ready to begin TUI implementation.
 
 ---
 
-### Task 4: Build TUI Rendering Components
+### UI Rendering
+- [x] **Task 4**: Build TUI rendering components
+  - Created ui/mod.rs with AppUiState
+  - Created ui/header.rs - poker card rpg title display
+  - Created ui/hand.rs - player hand with card selection highlight
+  - Created ui/log.rs - combat log with colored entries
+  - Created ui/footer.rs - help text display
+  - Updated main.rs with terminal setup and event loop
+  - 6 new UI tests added
 **Goal**: Display game state in terminal using ratatui
 
 **What needs to be done:**
@@ -230,22 +238,27 @@ None currently. Ready to begin TUI implementation.
 | Core Domain | ✅ Complete | 65 tests | Card, deck, hand, types |
 | Combat System | ✅ Complete | Included | Task 1 done |
 | Turn FSM | ✅ Complete | 27 tests | Task 2 done |
-| TUI Layer | ❌ Not started | 0 tests | Tasks 3-5 |
+| TUI Layer - Rendering | ✅ Complete | 6 tests | Task 4 done |
+| TUI Layer - Input | ❌ Not started | 0 tests | Task 5 |
 | Integration | ❌ Not started | 0 tests | Task 6 |
 
-**Total Tests: 92 passing** (0 failed)
+**Total Tests: 98 passing** (0 failed)
 
-**Current Status**: All core game logic complete. Ready to begin TUI implementation.
+**Current Status**: TUI rendering complete. Ready for input handling.
 
-**Next Milestone**: Task 3 - Create TUI binary with Bevy app (estimated 30-60 mins)
+**Next Milestone**: Task 5 - Add TUI input handling (keyboard navigation, card selection)
 
 ---
 
 ## Git History (Recent Commits)
 
 ```
+69eb0f6 - Complete Task 4: Build TUI rendering components
+407c6c2 - Complete Task 3: Create TUI binary crate
+69eb0f6 - Complete Task 4: Build TUI rendering components
 fb6e4fe - Complete Task 2: Turn Management FSM
-aca2a5d - Complete Task 1: Implement combat system logic
+eca2a5d - Complete Task 1: Implement combat system logic
+192b3dd - Update project organization
 f7a6f86 - Create TODOS.md with detailed task breakdown
 f355486 - Reorganize tests into respective modules
 ed48c5e - Refactor core domain into modules; update edition and dependencies
