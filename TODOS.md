@@ -2,6 +2,8 @@
 
 Progress tracking for system-by-system development.
 
+---
+
 ## ✅ Completed
 
 ### Project Setup
@@ -12,57 +14,19 @@ Progress tracking for system-by-system development.
 ### Core Domain
 - [x] **Combat Engine**: Damage multiplier and probability logic (RPS + Infantry)
 - [x] **Combat System Logic**: Persist card HP, remove dead cards, check win/loss
-- [x] **Test Suite**: 65 tests organized by module (card, deck, hand, types, combat, combat_log)
+- [x] **Turn Management FSM**: GameState methods, SelectedCard, AI system, turn progression
+- [x] **Test Suite**: 92 tests organized by module (card, deck, hand, types, combat, combat_log, turn_state, ai, systems)
 
 ### Code Organization
 - [x] Reorganize tests from lib.rs into respective modules
 - [x] Clean lib.rs (module declarations only, 21 lines)
+- [x] Create dedicated tasks tracking in TODOS.md
 
 ---
 
 ## 🟡 In Progress
 
-### Task 2: Turn Management FSM
-**Goal**: Implement state machine for turn progression
-
-**Current State:**
-- `GameState` enum exists with variants: `PlayerTurn`, `OpponentTurn`, `CombatResolution`, `GameOver(GameResult)`
-
-**What needs to be done:**
-
-1. **State Transition Logic**
-   - [ ] Implement `GameState::advance()` method
-     - Input: current state, combat result stats
-     - Output: next state
-   - [ ] Implement `GameState::should_resolve_combat()` → returns true if in `CombatResolution` phase
-   - [ ] Implement `GameState::is_active()` → returns false when in `GameOver`
-   - [ ] Implement `GameState::reset()` → returns to `PlayerTurn` with fresh stats
-
-2. **Turn Progression Rules**
-   - [ ] PlayerTurn → Player selects a card → transitions to CombatResolution
-   - [ ] CombatResolution → Combat system runs → transitions to OpponentTurn
-   - [ ] OpponentTurn → AI selects card → transitions to CombatResolution
-   - [ ] Win condition → transitions to GameOver(Won/Lost/Draw)
-
-3. **AI Opponent Logic** (OpponentTurn behavior)
-   - [ ] Basic AI: randomly select from available cards
-   - [ ] Store AI opponent in separate `Hand` resource
-   - [ ] Add system: `opponent_select_card_system()`
-
-4. **Card Selection System** (PlayerTurn behavior)
-   - [ ] Player indicates card to play (initially via hardcoded, later via UI input)
-   - [ ] Store selected card index in `SelectedCard` resource
-   - [ ] Validate selection is valid (card exists, not dead)
-
-5. **Tests to Add**
-   - [ ] State transition tests (each valid path)
-   - [ ] AI card selection tests
-   - [ ] Game reset tests
-
-**Files to modify:**
-- `game_core/src/combat_stats.rs` - Add methods to `GameState`
-- `game_core/src/systems.rs` - Add turn progression systems
-- New: `game_core/src/ai.rs` - Opponent AI logic (optional, can inline for now)
+None currently. Ready to begin TUI implementation.
 
 ---
 
@@ -105,6 +69,8 @@ Progress tracking for system-by-system development.
 - `game_tui/Cargo.toml`
 - `game_tui/src/main.rs`
 - Update: `Cargo.toml` (workspace)
+
+**Estimated Effort:** ~30-60 minutes
 
 ---
 
@@ -156,6 +122,8 @@ Progress tracking for system-by-system development.
 - `game_tui/src/ui/log.rs`
 - `game_tui/src/ui/footer.rs`
 
+**Estimated Effort:** ~2-3 hours
+
 ---
 
 ### Task 5: Add TUI Input Handling
@@ -194,6 +162,8 @@ Progress tracking for system-by-system development.
 - `game_tui/src/input.rs`
 - `game_tui/src/event_loop.rs` (or integrate into main.rs)
 
+**Estimated Effort:** ~1-2 hours
+
 ---
 
 ### Task 6: End-to-End Playable Loop Testing
@@ -229,6 +199,8 @@ Progress tracking for system-by-system development.
 - `game_tui/tests/integration_tests.rs`
 - New resource: `game_core/src/game_state.rs` (for restart/reset logic if needed)
 
+**Estimated Effort:** ~1-2 hours
+
 ---
 
 ## 📋 Technical Debt & Notes
@@ -253,13 +225,28 @@ Progress tracking for system-by-system development.
 ## Progress Summary
 
 | Phase | Status | Tests | Notes |
-|-------|-----|------|-------|
-| Core Domain | ✅ Complete | 65 tests | All combat logic working |
+|-------|------|------|-----|
+| Project Setup | ✅ Complete | 0 tests | Scaffolding done |
+| Core Domain | ✅ Complete | 65 tests | Card, deck, hand, types |
 | Combat System | ✅ Complete | Included | Task 1 done |
-| Turn FSM | 🟡 Partial | 0 tests | Task 2 in progress |
+| Turn FSM | ✅ Complete | 27 tests | Task 2 done |
 | TUI Layer | ❌ Not started | 0 tests | Tasks 3-5 |
 | Integration | ❌ Not started | 0 tests | Task 6 |
 
-**Total Tests: 65 passing** (0 failed)
+**Total Tests: 92 passing** (0 failed)
 
-**Current Focus**: Task 2 - Turn Management FSM
+**Current Status**: All core game logic complete. Ready to begin TUI implementation.
+
+**Next Milestone**: Task 3 - Create TUI binary with Bevy app (estimated 30-60 mins)
+
+---
+
+## Git History (Recent Commits)
+
+```
+fb6e4fe - Complete Task 2: Turn Management FSM
+aca2a5d - Complete Task 1: Implement combat system logic
+f7a6f86 - Create TODOS.md with detailed task breakdown
+f355486 - Reorganize tests into respective modules
+ed48c5e - Refactor core domain into modules; update edition and dependencies
+```

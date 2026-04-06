@@ -39,7 +39,8 @@ The project follows a strict **System-by-System Verification** approach:
 ## Resources
 - **Task List**: See [TODOS.md](TODOS.md) for current progress and next steps
 
-## Knowledge Base
-- [BEVY_KNOWLEDGE.md](BEVY_KNOWLEDGE.md) - Bevy ECS and system patterns
-- [RATATUI_KNOWLEDGE.md](RATATUI_KNOWLEDGE.md) - Terminal UI patterns
-- [RAND_KNOWLEDGE.md](RAND_KNOWLEDGE.md) - Random number generation in Rust
+## Documentation
+See the `docs/` folder for knowledge base:
+- [docs/BEVY_KNOWLEDGE.md](docs/BEVY_KNOWLEDGE.md) - Bevy ECS and system patterns
+- [docs/RATATUI_KNOWLEDGE.md](docs/RATATUI_KNOWLEDGE.md) - Terminal UI patterns
+- [docs/RAND_KNOWLEDGE.md](docs/RAND_KNOWLEDGE.md) - Random number generation in Rust
