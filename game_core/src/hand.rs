@@ -4,7 +4,7 @@ use crate::Card;
 use bevy::prelude::*;
 
 /// Resource representing a player's hand
-#[derive(Resource, Default)]
+#[derive(Resource, Default, Clone)]
 pub struct Hand {
     pub cards: Vec<Card>,
 }

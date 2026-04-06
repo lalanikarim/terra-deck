@@ -148,6 +148,7 @@ These tasks are required to make the game fully playable.
    - [ ] Update card HP in hands based on combat result
    - [ ] Display combat log entries with colored text
    - [ ] Show critical hits, absorbs, multipliers
+   - [ ] **Keep opponent card hidden** - only show suit/suit archetype
 
 3. **Dead Card Removal**
    - [ ] Call `Hand::remove_dead_cards()` after combat
@@ -164,6 +165,7 @@ These tasks are required to make the game fully playable.
 5. **Win/Loss Detection**
    - [ ] Check `GameState` after each combat round
    - [ ] Display "YOU WON!" or "YOU LOST!" message
+   - [ ] **Reveal all opponent cards at game end only**
    - [ ] Show final scoreboard (cards remaining, damage dealt)
    - [ ] Option to restart or quit
 
@@ -173,11 +175,47 @@ These tasks are required to make the game fully playable.
    - [ ] Clear combat log
    - [ ] Reset to initial state
 
+---
+
+## Opponent Card Display Rules ⚡
+
+**During gameplay:**
+- Show as `[?] ●` (alive) or `[X] ✕` (dead)
+- **NO HP values visible** - keeps opponent completely hidden
+- **NO card values revealed** until game end
+- Only alive/dead status shown
+
+**Example opponent hand display:**
+```
+OPPONENT'S HAND:
+ [?] ●  (alive)
+ [?] ●  (alive)
+ [X] ✕  (dead - removed this turn)
+ [?] ●  (alive)
+ [X] ✕  (dead)
+```
+
+**At game end (victory screen):**
+```
+OPPONENT'S HAND (REVEALED):
+ [?] ♦ 5  HP:0/5   (was dead)
+ [?] ♣ J HP:3/11   (alive, took 8 damage)
+ [X] ♠ Q HP:0/12  (was dead)
+```
+
+**Combat log shows archetype but not card value:**
+```
+✓ Your ♥ 10 (Rock) vs Opponent ? (Scissors)
+  → Rock beats Scissors! You deal 5 damage
+  → Opponent hits back, but you absorb 4 damage (0 taken)
+```
+
 **What files to modify/create:**
 - `game_tui/src/main.rs` (major rewrite needed)
 - `game_tui/src/game_state.rs` (new - track game loop state)
 - `game_tui/src/ui/mod.rs` (update render to show combat state)
-- `game_tui/src/ui/hand.rs` (show HP updates)
+- `game_tui/src/ui/hand.rs` (show HP updates, opponent hidden)
+- `game_tui/src/ui/opponent.rs` (new - hidden opponent display)
 
 ## Next Steps (Future)
 

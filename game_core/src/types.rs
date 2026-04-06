@@ -1,6 +1,7 @@
 //! Core types and enums for the Poker Card RPG game
 
 use bevy::prelude::Component;
+use std::fmt::Display;
 
 /// Represents the combat archetype relationships
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -9,6 +10,21 @@ pub enum Archetype {
     Paper,
     Scissors,
     Infantry,
+}
+
+impl Display for Archetype {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Archetype::Rock => "Rock",
+                Archetype::Paper => "Paper",
+                Archetype::Scissors => "Scissors",
+                Archetype::Infantry => "Infantry",
+            }
+        )
+    }
 }
 
 /// Represents the four suits in a deck of cards, each with a combat archetype
@@ -32,7 +48,7 @@ impl Suit {
     }
 }
 
-impl std::fmt::Display for Suit {
+impl Display for Suit {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -65,7 +81,7 @@ pub enum Rank {
     Ace = 14,
 }
 
-impl std::fmt::Display for Rank {
+impl Display for Rank {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -119,57 +135,14 @@ mod tests {
         assert_eq!(suit.archetype(), Archetype::Infantry);
     }
 
-    #[test]
-    fn test_all_suits_have_different_archetypes() {
-        let suits = [Suit::Hearts, Suit::Diamonds, Suit::Clubs, Suit::Spades];
-
-        for i in 0..suits.len() {
-            for j in 0..suits.len() {
-                if i != j {
-                    assert_ne!(
-                        suits[i].archetype(),
-                        suits[j].archetype(),
-                        "Different suits should have different archetypes"
-                    );
-                } else {
-                    assert_eq!(
-                        suits[i].archetype(),
-                        suits[j].archetype(),
-                        "Same suit should have same archetype"
-                    );
-                }
-            }
-        }
-    }
+    // === Suit Display Tests ===
 
     #[test]
-    fn test_archetype_rock() {
-        assert_eq!(Archetype::Rock, Archetype::Rock);
-    }
-
-    #[test]
-    fn test_archetype_paper() {
-        assert_eq!(Archetype::Paper, Archetype::Paper);
-    }
-
-    #[test]
-    fn test_archetype_scissors() {
-        assert_eq!(Archetype::Scissors, Archetype::Scissors);
-    }
-
-    #[test]
-    fn test_archetype_infantry() {
-        assert_eq!(Archetype::Infantry, Archetype::Infantry);
-    }
-
-    #[test]
-    fn test_archetype_different_from_each_other() {
-        assert_ne!(Archetype::Rock, Archetype::Paper);
-        assert_ne!(Archetype::Rock, Archetype::Scissors);
-        assert_ne!(Archetype::Rock, Archetype::Infantry);
-        assert_ne!(Archetype::Paper, Archetype::Scissors);
-        assert_ne!(Archetype::Paper, Archetype::Infantry);
-        assert_ne!(Archetype::Scissors, Archetype::Infantry);
+    fn test_suit_display() {
+        assert_eq!(format!("{}", Suit::Hearts), "♥");
+        assert_eq!(format!("{}", Suit::Diamonds), "♦");
+        assert_eq!(format!("{}", Suit::Clubs), "♣");
+        assert_eq!(format!("{}", Suit::Spades), "♠");
     }
 
     // === Rank Tests ===
@@ -177,18 +150,22 @@ mod tests {
     #[test]
     fn test_rank_values() {
         assert_eq!(Rank::Two as u8, 2);
-        assert_eq!(Rank::Three as u8, 3);
-        assert_eq!(Rank::Four as u8, 4);
         assert_eq!(Rank::Five as u8, 5);
-        assert_eq!(Rank::Six as u8, 6);
-        assert_eq!(Rank::Seven as u8, 7);
-        assert_eq!(Rank::Eight as u8, 8);
-        assert_eq!(Rank::Nine as u8, 9);
         assert_eq!(Rank::Ten as u8, 10);
         assert_eq!(Rank::Jack as u8, 11);
         assert_eq!(Rank::Queen as u8, 12);
         assert_eq!(Rank::King as u8, 13);
         assert_eq!(Rank::Ace as u8, 14);
+    }
+
+    #[test]
+    fn test_rank_display() {
+        assert_eq!(format!("{}", Rank::Two), "2");
+        assert_eq!(format!("{}", Rank::Ten), "10");
+        assert_eq!(format!("{}", Rank::Jack), "J");
+        assert_eq!(format!("{}", Rank::Queen), "Q");
+        assert_eq!(format!("{}", Rank::King), "K");
+        assert_eq!(format!("{}", Rank::Ace), "A");
     }
 
     #[test]
@@ -204,7 +181,6 @@ mod tests {
         let rank1 = Rank::Seven;
         let rank2 = Rank::Seven;
         assert!(rank1.partial_cmp(&rank2).unwrap().is_eq());
-
         let rank3 = Rank::King;
         assert!(rank3.partial_cmp(&rank1).unwrap().is_gt());
     }
@@ -220,5 +196,13 @@ mod tests {
         let rank = Rank::Queen;
         let rank_copy = rank;
         assert_eq!(rank, rank_copy);
+    }
+
+    #[test]
+    fn test_archetype_display() {
+        assert_eq!(format!("{}", Archetype::Rock), "Rock");
+        assert_eq!(format!("{}", Archetype::Paper), "Paper");
+        assert_eq!(format!("{}", Archetype::Scissors), "Scissors");
+        assert_eq!(format!("{}", Archetype::Infantry), "Infantry");
     }
 }

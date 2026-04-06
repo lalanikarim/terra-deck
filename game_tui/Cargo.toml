@@ -10,3 +10,4 @@ game_core = { path = "../game_core" }
 # TUI dependencies
 ratatui = "0.29"
 crossterm = "0.28"
+rand = "0.10"

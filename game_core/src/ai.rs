@@ -1,5 +1,6 @@
 //! Simple AI opponent logic
 
+use rand::prelude::*;
 
 /// Selects a card index for the opponent to play
 /// Currently uses simple random selection
@@ -8,8 +9,7 @@ pub fn select_opponent_card(hand_size: usize) -> Option<usize> {
         return None;
     }
     
-    
-    Some(rand::random_range(0..hand_size))
+    Some(rand::rng().random_range(0..hand_size))
 }
 
 /// Updates the selected card state for opponent turn

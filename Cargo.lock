@@ -2650,6 +2650,7 @@ dependencies = [
  "bevy",
  "crossterm",
  "game_core",
+ "rand 0.10.0",
  "ratatui",
 ]
 

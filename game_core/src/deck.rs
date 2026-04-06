@@ -3,9 +3,10 @@
 use crate::types::{Rank, Suit};
 use crate::Card;
 use bevy::prelude::*;
+use rand::prelude::*;
 
 /// Resource representing the game deck
-#[derive(Resource)]
+#[derive(Resource, Clone)]
 pub struct Deck {
     pub cards: Vec<Card>,
 }
@@ -41,6 +42,16 @@ impl Deck {
         Deck { cards }
     }
 
+    /// Shuffle the deck using Fisher-Yates algorithm
+    pub fn shuffle<R: Rng>(&mut self, rng: &mut R) {
+        let mut len = self.cards.len();
+        while len > 1 {
+            len -= 1;
+            let swap_idx = rng.random_range(0..len);
+            self.cards.swap(len, swap_idx);
+        }
+    }
+
     /// Draws a card from the deck, returning None if empty
     pub fn draw(&mut self) -> Option<Card> {
         self.cards.pop()
@@ -66,6 +77,8 @@ impl Default for Deck {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rand::SeedableRng;
+    use rand::rngs::SmallRng;
 
     #[test]
     fn test_deck_generation() {
@@ -197,5 +210,37 @@ mod tests {
 
         // Second deck should still be intact
         assert_eq!(deck2.len(), 51);
+    }
+
+    #[test]
+    fn test_shuffle_changes_order() {
+        let mut deck = Deck::new();
+        let mut rng = SmallRng::seed_from_u64(42);
+        let original = deck.cards.clone();
+        
+        // Shuffle and verify still 52 cards
+        deck.shuffle(&mut rng);
+        assert_eq!(deck.len(), 52);
+        
+        // Verify order changed (with this seed, it will change)
+        assert_ne!(original, deck.cards);
+    }
+
+    #[test]
+    fn test_shuffle_preserves_all_cards() {
+        let mut deck = Deck::new();
+        let mut rng = SmallRng::seed_from_u64(42);
+        let original = deck.cards.clone();
+        
+        deck.shuffle(&mut rng);
+        
+        assert_eq!(deck.len(), original.len());
+        
+        // All suits and ranks should still be present
+        for suit in [Suit::Hearts, Suit::Diamonds, Suit::Clubs, Suit::Spades].iter() {
+            for rank in [Rank::Two, Rank::Ten, Rank::Ace].iter() {
+                assert!(deck.cards.iter().any(|c| c.suit == *suit && c.rank == *rank));
+            }
+        }
     }
 }

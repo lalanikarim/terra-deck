@@ -1,112 +1,217 @@
 //! Poker Card RPG - TUI Application
+//! Full game integration with combat loop, deck management, and turns
 
-use bevy::prelude::*;
+use std::io::{stdout, Write};
+use std::time::Duration;
+
 use crossterm::{
-    event::{self, KeyCode, KeyEventKind},
+    event::{self, Event, KeyCode, KeyEvent, KeyModifiers, KeyboardEnhancementFlags, MouseEvent, PopKeyboardEnhancementFlags, PushKeyboardEnhancementFlags},
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
 };
-use std::io::{stdout, Write};
 use ratatui::{backend::CrosstermBackend, Terminal};
 
-use game_core::*;
-
+mod game_state;
 mod ui;
-use ui::{AppUiState, render_game};
+
+use game_state::*;
+use ui::*;
 
 fn main() {
-    // Setup terminal
-    terminal::enable_raw_mode().expect("Failed to enable raw mode");
-    stdout()
-        .execute(EnterAlternateScreen)
-        .expect("Failed to enter alternate screen");
+    // Setup terminal for TUI
+    setup_terminal().expect("Failed to setup terminal");
 
     let backend = CrosstermBackend::new(stdout());
     let mut terminal = Terminal::new(backend).expect("Failed to create terminal");
 
-    // Initialize game state with placeholder cards
-    let mut tui_state = AppUiState::default();
-    tui_state.selected_card = Some(0);
+    // Initialize game
+    let mut game = FullGameState::new();
+    game.start_new_game();
 
-    // Example cards for display
-    let player_cards = create_example_player_hand();
-    let opponent_card_count = create_example_opponent_hand().len();
-
-    info!("🎴 Poker Card RPG - Terra-Deck");
-    info!("Player has {} cards, Opponent has {} cards", 
-          player_cards.len(), opponent_card_count);
+    println!("🎴 Poker Card RPG - Terra-Deck");
+    println!("Game initialized with {} player cards and {} opponent cards",
+          game.player_hand.len(), game.opponent_hand.len());
 
     // Main game loop
     loop {
-        // Draw frame with current state
+        // Draw frame
         terminal
-            .draw(|frame| render_game(frame, &tui_state, &player_cards))
+            .draw(|frame| {
+                render_game(frame, &game, game.is_player_turn(), game.is_opponent_turn());
+            })
             .expect("Failed to draw frame");
 
         // Poll for input events
-        if event::poll(std::time::Duration::from_millis(100))
-            .expect("Failed to poll events")
-        {
-            if let event::Event::Key(key) = event::read().expect("Failed to read event") {
-                if key.kind == KeyEventKind::Press {
-                    match key.code {
-                        KeyCode::Char('q') | KeyCode::Esc => {
-                            info!("Quitting game...");
-                            break;
-                        }
-                        KeyCode::Left | KeyCode::Char('h') => {
-                            tui_state.move_selection_left();
-                        }
-                        KeyCode::Right | KeyCode::Char('l') => {
-                            tui_state.move_selection_right();
-                        }
-                        KeyCode::Enter | KeyCode::Char(' ') => {
-                            if let Some(idx) = tui_state.selected_card {
-                                info!("→ Playing card #{} ({} of {})", 
-                                     idx + 1, 
-                                     get_card_display_name(&player_cards[idx]),
-                                     player_cards[idx].suit);
-                                // TODO: Trigger combat system
-                            }
-                        }
-                        _ => {}
+        if event::poll(Duration::from_millis(50)).expect("Failed to poll events") {
+            if let std::io::Result::Ok(Event::Key(key)) = event::read() {
+                match handle_key(&game, key) {
+                    Some(mut next_game) => {
+                        game = next_game;
                     }
+                    None => {}
                 }
             }
+        }
+
+        // Check if we should quit
+        if game.loop_state == GameStateLoop::Quit {
+            break;
         }
     }
 
     // Cleanup terminal
-    drop(terminal);
-    stdout()
-        .execute(LeaveAlternateScreen)
-        .expect("Failed to leave alternate screen");
-    terminal::disable_raw_mode().expect("Failed to disable raw mode");
+    cleanup_terminal().expect("Failed to cleanup terminal");
 }
 
-/// Create example player hand for demo
-fn create_example_player_hand() -> Vec<Card> {
-    vec![
-        Card::new(game_core::Suit::Hearts, game_core::Rank::Ten),
-        Card::new(game_core::Suit::Diamonds, game_core::Rank::Five),
-        Card::new(game_core::Suit::Clubs, game_core::Rank::Jack),
-        Card::new(game_core::Suit::Spades, game_core::Rank::Queen),
-        Card::new(game_core::Suit::Hearts, game_core::Rank::Ace),
-    ]
+/// Setup terminal for raw mode
+fn setup_terminal() -> std::io::Result<()> {
+    terminal::enable_raw_mode()?;
+    stdout().execute(EnterAlternateScreen)?;
+    Ok(())
 }
 
-/// Create example opponent hand (hidden)
-fn create_example_opponent_hand() -> Vec<Card> {
-    vec![
-        Card::new(game_core::Suit::Diamonds, game_core::Rank::King),
-        Card::new(game_core::Suit::Clubs, game_core::Rank::Eight),
-        Card::new(game_core::Suit::Spades, game_core::Rank::Nine),
-        Card::new(game_core::Suit::Hearts, game_core::Rank::Four),
-        Card::new(game_core::Suit::Spades, game_core::Rank::Ace),
-    ]
+/// Cleanup terminal
+fn cleanup_terminal() -> std::io::Result<()> {
+    stdout().execute(LeaveAlternateScreen)?;
+    terminal::disable_raw_mode()?;
+    Ok(())
 }
 
-/// Get a friendly name for a card
-fn get_card_display_name(card: &Card) -> String {
-    format!("{} {}", card.rank, card.suit)
+/// Handle key input based on current game state
+fn handle_key(game: &FullGameState, key: KeyEvent) -> Option<FullGameState> {
+    // If opponent turn or resolving combat, ignore player input
+    if game.is_opponent_turn() || game.is_resolving() || game.loop_state == GameStateLoop::GameOver {
+        return None;
+    }
+
+    // Only handle key press events
+    match key.kind {
+        crossterm::event::KeyEventKind::Press => {}
+        _ => return None,
+    }
+
+    let mut new_game = game.clone();
+
+    match key.code {
+        KeyCode::Char('q') => {
+            println!("Quitting game...");
+            new_game.loop_state = GameStateLoop::Quit;
+            Some(new_game)
+        }
+        KeyCode::Left | KeyCode::Char('h') => {
+            move_selection_left(&mut new_game);
+            Some(new_game)
+        }
+        KeyCode::Right | KeyCode::Char('l') => {
+            move_selection_right(&mut new_game);
+            Some(new_game)
+        }
+        KeyCode::Enter | KeyCode::Char(' ') => {
+            handle_enter(&mut new_game);
+            Some(new_game)
+        }
+        KeyCode::Char('y') | KeyCode::Char('Y') => {
+            confirm_attack(&mut new_game);
+            Some(new_game)
+        }
+        KeyCode::Char('n') | KeyCode::Char('N') => {
+            cancel_attack(&mut new_game);
+            Some(new_game)
+        }
+        KeyCode::Esc => {
+            cancel_attack(&mut new_game);
+            Some(new_game)
+        }
+        KeyCode::Char('r') | KeyCode::Char('R') => {
+            if new_game.loop_state == GameStateLoop::GameOver {
+                new_game.start_new_game();
+            }
+            Some(new_game)
+        }
+        _ => None,
+    }
+}
+
+/// Move selection left
+fn move_selection_left(game: &mut FullGameState) {
+    if game.loop_state == GameStateLoop::SelectPlayerCard {
+        if let Some(idx) = game.selected_player_card {
+            if game.selected_player_card.is_some() && game.selected_player_card.unwrap() < game.player_hand.len() {
+                game.selected_player_card = Some(if idx == 0 { game.player_hand.len() - 1 } else { idx - 1 });
+            }
+        }
+    } else if game.loop_state == GameStateLoop::SelectOpponentTarget {
+        if let Some(idx) = game.selected_opponent_card {
+            if game.selected_opponent_card.is_some() && game.selected_opponent_card.unwrap() < game.opponent_hand.len() {
+                game.selected_opponent_card = Some(if idx == 0 { game.opponent_hand.len() - 1 } else { idx - 1 });
+            }
+        }
+    }
+}
+
+/// Move selection right
+fn move_selection_right(game: &mut FullGameState) {
+    if game.loop_state == GameStateLoop::SelectPlayerCard {
+        game.selected_player_card = Some(game.selected_player_card.unwrap_or(0));
+        if let Some(idx) = game.selected_player_card {
+            game.selected_player_card = Some((idx + 1) % game.player_hand.len());
+        }
+    } else if game.loop_state == GameStateLoop::SelectOpponentTarget {
+        game.selected_opponent_card = Some(game.selected_opponent_card.unwrap_or(0));
+        if let Some(idx) = game.selected_opponent_card {
+            game.selected_opponent_card = Some((idx + 1) % game.opponent_hand.len());
+        }
+    }
+}
+
+/// Handle Enter key (advance to next step)
+fn handle_enter(game: &mut FullGameState) {
+    match game.loop_state {
+        GameStateLoop::SelectPlayerCard => {
+            if game.selected_player_card.is_some() && game.selected_player_card.unwrap() < game.player_hand.len() {
+                game.loop_state = GameStateLoop::SelectOpponentTarget;
+                game.selected_opponent_card = Some(0);
+            }
+        }
+        GameStateLoop::SelectOpponentTarget => {
+            if game.selected_opponent_card.is_some() && game.selected_opponent_card.unwrap() < game.opponent_hand.len() {
+                game.loop_state = GameStateLoop::ConfirmAttack;
+            }
+        }
+        GameStateLoop::ConfirmAttack => {
+            confirm_attack(game);
+        }
+        _ => {}
+    }
+}
+
+/// Confirm attack and resolve combat
+fn confirm_attack(game: &mut FullGameState) {
+    if let (Some(player_idx), Some(opponent_idx)) = 
+        (game.selected_player_card, game.selected_opponent_card) {
+        
+        // Ensure indices are valid
+        let valid_player_idx = player_idx.min(game.player_hand.len() - 1);
+        let valid_opponent_idx = opponent_idx.min(game.opponent_hand.len() - 1);
+
+        let result = game.resolve_player_attack(valid_player_idx, valid_opponent_idx);
+        println!("Combat: You dealt {} damage, took {} damage", 
+              result.player_dmg, result.opponent_dmg);
+
+        // Reset for next turn
+        game.loop_state = GameStateLoop::SelectPlayerCard;
+        game.selected_player_card = Some(0);
+        game.selected_opponent_card = None;
+    }
+}
+
+/// Cancel attack and go back
+fn cancel_attack(game: &mut FullGameState) {
+    match game.loop_state {
+        GameStateLoop::SelectOpponentTarget | GameStateLoop::ConfirmAttack => {
+            game.loop_state = GameStateLoop::SelectPlayerCard;
+            game.selected_opponent_card = None;
+        }
+        _ => {}
+    }
 }

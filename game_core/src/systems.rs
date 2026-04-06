@@ -6,6 +6,7 @@ use crate::combat_stats::{CombatStats, GameResult, GameState};
 use crate::hand::Hand;
 use crate::turn_state::SelectedCard;
 use bevy::prelude::*;
+use rand::prelude::*;
 
 /// System to resolve combat between player and opponent cards
 pub fn resolve_combat_system(
@@ -175,7 +176,7 @@ pub fn opponent_select_card_system(
     // This is a simplified approach - in a real game, AI would have more logic
     let hand_size = opponent_hand.cards.len();
     
-    let card_index = rand::random_range(0..hand_size);
+    let card_index = rand::rng().random_range(0..hand_size);
 
     combat_log.add_entry(format!("Opponent selected card {}", card_index));
     // Transition to combat resolution

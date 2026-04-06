@@ -2,31 +2,25 @@
 
 use ratatui::{prelude::*, widgets::*};
 
-pub fn render(frame: &mut Frame, area: Rect, state: &super::AppUiState, log_entries: &[String]) {
+use game_core::CombatLog;
+
+/// Render combat log
+pub fn render(frame: &mut Frame, area: Rect, combat_log: &CombatLog) {
     let max_visible = (area.height as usize - 2).max(1);
 
-    let start = state.log_scroll_offset.unwrap_or(0);
-    let _end = std::cmp::min(start + max_visible, log_entries.len());
-
-    let visible_entries: Vec<Line> = log_entries
+    let entries: Vec<&String> = combat_log.iter().collect();
+    let start = entries.len().saturating_sub(max_visible);
+    let visible: Vec<Line> = entries[start..]
         .iter()
-        .enumerate()
-        .filter_map(|(i, entry)| {
-            let relative_idx = i - start;
-            if relative_idx < max_visible {
-                Some(Line::from(entry.clone()).style(style_log_entry(entry)))
-            } else {
-                None
-            }
-        })
+        .map(|entry| Line::from((*entry).as_str()).style(style_log_entry(entry)))
         .collect();
 
-    let paragraph = if visible_entries.is_empty() {
-        Paragraph::new("No combat yet...")
+    let paragraph = if visible.is_empty() {
+        Paragraph::new("Combat log is empty...")
             .style(Style::default().fg(Color::DarkGray))
             .alignment(Alignment::Center)
     } else {
-        Paragraph::new(visible_entries)
+        Paragraph::new(visible)
     };
 
     frame.render_widget(
@@ -37,13 +31,41 @@ pub fn render(frame: &mut Frame, area: Rect, state: &super::AppUiState, log_entr
 
 /// Style log entries based on content
 fn style_log_entry(entry: &str) -> Style {
-    if entry.contains("Won") || entry.contains("Won!") {
+    if entry.contains("YOU WON") {
         Style::default().fg(Color::Green).bold()
-    } else if entry.contains("Lost") || entry.contains("Lost!") {
+    } else if entry.contains("YOU LOST") {
         Style::default().fg(Color::Red).bold()
-    } else if entry.contains("Critical") || entry.contains("crit") {
+    } else if entry.contains("CRITICAL") {
         Style::default().fg(Color::Yellow).bold()
+    } else if entry.contains("died") || entry.contains("destroyed") {
+        Style::default().fg(Color::Red)
+    } else if entry.contains("Game started") {
+        Style::default().fg(Color::Cyan)
     } else {
         Style::default().fg(Color::Gray)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_style_log_entry_won() {
+        let style = style_log_entry("=== YOU WON! ===");
+        assert_eq!(style.foreground, Some(ratatui::style::Color::Green));
+    }
+
+    #[test]
+    fn test_style_log_entry_lost() {
+        let style = style_log_entry("=== YOU LOST ===");
+        assert_eq!(style.foreground, Some(ratatui::style::Color::Red));
+    }
+
+    #[test]
+    fn test_style_log_entry_critical() {
+        let style = style_log_entry("CRITICAL! dealt 10 damage");
+        assert_eq!(style.foreground, Some(ratatui::style::Color::Yellow));
+    }
+}
+use ratatui::widgets::{Paragraph, Line, Block, Style, Color, Modifier};

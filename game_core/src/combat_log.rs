@@ -2,7 +2,7 @@
 use bevy::prelude::Resource;
 use std::default::Default;
 
-#[derive(Resource)]
+#[derive(Resource, Clone)]
 pub struct CombatLog {
     pub entries: Vec<String>,
     /// Maximum number of entries to keep (oldest are removed when exceeded)
