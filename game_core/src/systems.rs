@@ -1,5 +1,5 @@
 //! Bevy ECS systems for combat resolution and turn management
-use rand::Rng;
+
 use crate::combat::{apply_combat_damage, CombatResult};
 use crate::combat_log::CombatLog;
 use crate::combat_stats::{CombatStats, GameResult, GameState};

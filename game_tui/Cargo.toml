@@ -1,0 +1,12 @@
+[package]
+name = "game_tui"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = "0.18.1"
+game_core = { path = "../game_core" }
+
+# TUI dependencies (to be added when implementing UI)
+# ratatui = "0.30"
+# crossterm = "0.29"

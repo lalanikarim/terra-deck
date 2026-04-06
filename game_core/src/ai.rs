@@ -1,5 +1,5 @@
 //! Simple AI opponent logic
-use rand::Rng;
+
 
 /// Selects a card index for the opponent to play
 /// Currently uses simple random selection
