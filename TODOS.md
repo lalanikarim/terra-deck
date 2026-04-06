@@ -126,14 +126,68 @@ bevygame/
 
 ---
 
+## 🚧 Pending Tasks
+
+These tasks are required to make the game fully playable.
+
+### Task 7: Full Game Loop Integration
+**Goal**: Connect UI with game_core systems for actual gameplay
+
+**What needs to be done:**
+
+1. **Deck and Hand Management**
+   - [ ] Initialize full deck at game start (52 cards)
+   - [ ] Shuffle deck randomly
+   - [ ] Deal 5 cards to player and opponent hands
+   - [ ] Update TUI to use real hands from resources
+   - [ ] Refill hands from deck when needed?
+
+2. **Combat Trigger and Resolution**
+   - [ ] When Space pressed → trigger combat between selected cards
+   - [ ] Call `apply_combat_damage()` from game_core
+   - [ ] Update card HP in hands based on combat result
+   - [ ] Display combat log entries with colored text
+   - [ ] Show critical hits, absorbs, multipliers
+
+3. **Dead Card Removal**
+   - [ ] Call `Hand::remove_dead_cards()` after combat
+   - [ ] Update TUI to show new hand state (fewer cards)
+   - [ ] Log which cards died
+   - [ ] Handle case where player has no cards left
+
+4. **Turn Progression**
+   - [ ] Track current turn (PlayerTurn → OpponentTurn → Combat → PlayerTurn)
+   - [ ] AI opponent selects card after player plays
+   - [ ] Disable input during opponent turn (waiting visual)
+   - [ ] Reset selection after each turn
+
+5. **Win/Loss Detection**
+   - [ ] Check `GameState` after each combat round
+   - [ ] Display "YOU WON!" or "YOU LOST!" message
+   - [ ] Show final scoreboard (cards remaining, damage dealt)
+   - [ ] Option to restart or quit
+
+6. **Restart Game**
+   - [ ] Create `reset_game()` function
+   - [ ] Re-shuffle deck, re-deal hands
+   - [ ] Clear combat log
+   - [ ] Reset to initial state
+
+**What files to modify/create:**
+- `game_tui/src/main.rs` (major rewrite needed)
+- `game_tui/src/game_state.rs` (new - track game loop state)
+- `game_tui/src/ui/mod.rs` (update render to show combat state)
+- `game_tui/src/ui/hand.rs` (show HP updates)
+
 ## Next Steps (Future)
 
-These were out of scope for the current sprint:
+These were out of scope for the initial sprint, but could be implemented later:
 
-- [ ] Full Bevy ECS integration (instead of standalone TUI)
-- [ ] Card drawing between turns
-- [ ] Opponent AI improvement (beyond random)
-- [ ] Multi-round battles
-- [ ] Card synergies and abilities
-- [ ] Persistent game state / save/load
-- [ ] Transition to Bevy graphics (Phase 2)
+- [ ] **Multi-round battles** - Combat continues until both hands empty
+- [ ] **Smart AI opponent** - Use combat logic to pick best card each turn
+- [ ] **Card drawing between turns** - Pull from deck when hand gets low
+- [ ] **Card synergies and abilities** - Special effects for card combos
+- [ ] **Persistent save/load** - Resume game later
+- [ ] **Transition to Bevy graphics** - Full GUI with sprites and animations (Phase 2)
+- [ ] **Sound effects** - Combat sounds, card play sounds
+- [ ] **Achievements system** - Track wins, combos, perfect games
