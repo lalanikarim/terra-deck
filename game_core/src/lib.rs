@@ -15,7 +15,7 @@ pub mod types;
 pub use card::Card;
 pub use combat::{apply_combat_damage, calculate_damage_multiplier, CombatResult};
 pub use combat_log::CombatLog;
-pub use combat_stats::{CombatStats, GameState};
+pub use combat_stats::{CombatStats, GameResult, GameState};
 pub use deck::Deck;
 pub use hand::Hand;
 pub use types::{Archetype, Rank, Suit};

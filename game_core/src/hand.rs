@@ -43,6 +43,15 @@ impl Hand {
     pub fn get(&self, index: usize) -> Option<&Card> {
         self.cards.get(index)
     }
+
+    /// Removes all cards with 0 HP (dead cards)
+    /// Returns the number of dead cards removed
+    pub fn remove_dead_cards(&mut self) -> usize {
+        let before_len = self.cards.len();
+        self.cards.retain(|card| card.hp > 0);
+        let after_len = self.cards.len();
+        before_len - after_len
+    }
 }
 
 #[cfg(test)]
@@ -198,5 +207,60 @@ mod tests {
         let card = hand.play_card(0);
         assert!(card.is_none());
         assert!(hand.is_empty());
+    }
+
+    #[test]
+    fn test_hand_remove_dead_cards_removes_only_dead() {
+        let mut hand = Hand::default();
+        hand.add_card(Card::new(Suit::Hearts, Rank::Three));
+        hand.add_card(Card::new(Suit::Diamonds, Rank::Seven));
+        hand.add_card(Card::new(Suit::Clubs, Rank::Nine));
+
+        // Damage all cards to 0 HP
+        for i in 0..3 {
+            let hp = hand.cards[i].hp;
+            hand.cards[i].take_damage(hp); // Reduce to 0
+        }
+
+        let removed = hand.remove_dead_cards();
+        assert_eq!(removed, 3);
+        assert_eq!(hand.len(), 0);
+        assert!(hand.is_empty());
+    }
+
+    #[test]
+    fn test_hand_remove_dead_cards_partial() {
+        let mut hand = Hand::default();
+        hand.add_card(Card::new(Suit::Hearts, Rank::Two));
+        hand.add_card(Card::new(Suit::Diamonds, Rank::Eight));
+        hand.add_card(Card::new(Suit::Clubs, Rank::Jack));
+
+        // Only damage the middle card to 0 HP
+        let hp = hand.cards[1].hp;
+        hand.cards[1].take_damage(hp); // Reduce to 0
+
+        let removed = hand.remove_dead_cards();
+        assert_eq!(removed, 1);
+        assert_eq!(hand.len(), 2);
+        assert!(hand.get(0).unwrap().hp > 0);
+        assert!(hand.get(1).unwrap().hp > 0);
+    }
+
+    #[test]
+    fn test_hand_remove_dead_cards_no_dead() {
+        let mut hand = Hand::default();
+        hand.add_card(Card::new(Suit::Hearts, Rank::Ten));
+        hand.add_card(Card::new(Suit::Spades, Rank::Ace));
+
+        let removed = hand.remove_dead_cards();
+        assert_eq!(removed, 0);
+        assert_eq!(hand.len(), 2);
+    }
+
+    #[test]
+    fn test_hand_remove_dead_cards_empty_hand() {
+        let mut hand = Hand::default();
+        let removed = hand.remove_dead_cards();
+        assert_eq!(removed, 0);
     }
 }

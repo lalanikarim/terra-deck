@@ -190,7 +190,7 @@ mod tests {
 
     #[test]
     fn test_apply_combat_damage_deterministic() {
-        let mut attacker = Card::new(Suit::Hearts, Rank::Ten); // 10 HP Rock
+        let attacker = Card::new(Suit::Hearts, Rank::Ten); // 10 HP Rock
         let mut defender = Card::new(Suit::Clubs, Rank::Five); // 5 HP Scissors (Rock > Scissors)
 
         // Rock vs Scissors: 0.5x damage, 30% absorb chance
@@ -208,7 +208,7 @@ mod tests {
 
     #[test]
     fn test_apply_combat_damage_infantry_special() {
-        let mut attacker = Card::new(Suit::Hearts, Rank::Eight); // 8 HP Rock
+        let attacker = Card::new(Suit::Hearts, Rank::Eight); // 8 HP Rock
         let mut defender = Card::new(Suit::Spades, Rank::Four); // 4 HP Infantry
 
         // Test that damage is applied

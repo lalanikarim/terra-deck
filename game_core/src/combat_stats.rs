@@ -1,24 +1,25 @@
-/// Resource representing combat statistics for a turn
+//! Combat statistics and game state
 use bevy::prelude::Resource;
-use std::clone::Clone;
-use std::cmp::Eq;
-use std::cmp::PartialEq;
-use std::default::Default;
-use std::fmt::Debug;
-use std::hash::Hash;
-use std::marker::Copy;
 
-/// Resource representing the game state (turn management)
+/// Result of the game
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum GameResult {
+    Won,
+    Lost,
+    Draw,
+}
+
+/// Current state of the game
 #[derive(Resource, Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum GameState {
     #[default]
     PlayerTurn,
     OpponentTurn,
     CombatResolution,
-    GameOver,
+    GameOver(GameResult),
 }
 
-/// Resource representing combat statistics for a turn
+/// Combat statistics for a turn
 #[derive(Resource, Default)]
 pub struct CombatStats {
     pub player_damage_dealt: u8,
