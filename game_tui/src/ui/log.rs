@@ -1,17 +1,24 @@
-//! Combat log rendering - scrollable text area for game events
+//! Combat log rendering
 
 use ratatui::{prelude::*, widgets::*};
 
-pub fn render(frame: &mut Frame, area: Rect, state: &super::AppUiState) {
-    let log_entries = get_combat_log_entries();
-    let max_visible = area.height as usize - 2;
+pub fn render(frame: &mut Frame, area: Rect, state: &super::AppUiState, log_entries: &[String]) {
+    let max_visible = (area.height as usize - 2).max(1);
 
-    let start = state.log_scroll_offset;
-    let end = std::cmp::min(start + max_visible, log_entries.len());
+    let start = state.log_scroll_offset.unwrap_or(0);
+    let _end = std::cmp::min(start + max_visible, log_entries.len());
 
-    let visible_entries: Vec<Line> = log_entries[start..end]
+    let visible_entries: Vec<Line> = log_entries
         .iter()
-        .map(|entry| Line::from(entry.clone()).style(style_log_entry(entry)))
+        .enumerate()
+        .filter_map(|(i, entry)| {
+            let relative_idx = i - start;
+            if relative_idx < max_visible {
+                Some(Line::from(entry.clone()).style(style_log_entry(entry)))
+            } else {
+                None
+            }
+        })
         .collect();
 
     let paragraph = if visible_entries.is_empty() {
@@ -39,13 +46,4 @@ fn style_log_entry(entry: &str) -> Style {
     } else {
         Style::default().fg(Color::Gray)
     }
-}
-
-/// Get combat log entries (placeholder)
-fn get_combat_log_entries() -> Vec<String> {
-    vec![
-        "Game started!".to_string(),
-        "Player selected card 1".to_string(),
-        "Opponent selected card 2".to_string(),
-    ]
 }
