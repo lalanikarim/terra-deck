@@ -1,32 +1,73 @@
 //! Poker Card RPG - TUI Application
 //!
-//! This is the entry point for the terminal user interface using Bevy.
-//! Currently sets up the Bevy app with game_core resources.
+//! Main entry point for the terminal user interface using ratatui and crossterm.
 
-use bevy::prelude::*;
-use game_core::*;
+use ratatui::{backend::CrosstermBackend, Terminal};
+use crossterm::{
+    event::{self, KeyCode, KeyEventKind},
+    terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
+    ExecutableCommand,
+};
+use std::io::{stdout, Write};
+
+use ui::AppUiState;
 
 fn main() {
-    App::new()
-        .add_plugins(DefaultPlugins)
-        .init_resource::<GameState>()
-        .init_resource::<CombatStats>()
-        .init_resource::<CombatLog>()
-        .init_resource::<SelectedCard>()
-        .init_resource::<Deck>()
-        // Initialize player and opponent hands
-        .insert_resource(Hand::default())
-        .insert_resource(Hand::default())
-        .add_systems(Startup, init_game)
-        .run();
+    // Setup terminal
+    terminal::enable_raw_mode().expect("Failed to enable raw mode");
+    stdout().execute(EnterAlternateScreen).expect("Failed to enter alternate screen");
+
+    let backend = CrosstermBackend::new(stdout());
+    let mut terminal = Terminal::new(backend).expect("Failed to create terminal");
+
+    // Initialize app state
+    let mut app_state = AppUiState::default();
+    app_state.move_selection_right(); // Select first card
+
+    // Main loop
+    loop {
+        // Draw frame
+        terminal
+            .draw(|frame| ui::render_game(frame, &app_state))
+            .expect("Failed to draw frame");
+
+        // Poll for events
+        if event::poll(std::time::Duration::from_millis(100)).expect("Failed to poll events") {
+            if let event::Event::Key(key) = event::read().expect("Failed to read event") {
+                if key.kind == KeyEventKind::Press {
+                    match key.code {
+                        KeyCode::Char('q') | KeyCode::Esc => {
+                            return; // Quit
+                        }
+                        KeyCode::Left | KeyCode::Char('h') => {
+                            app_state.move_selection_left();
+                        }
+                        KeyCode::Right | KeyCode::Char('l') => {
+                            app_state.move_selection_right();
+                        }
+                        KeyCode::Enter | KeyCode::Char(' ') => {
+                            play_selected_card(&app_state);
+                        }
+                        _ => {}
+                    }
+                }
+            }
+        }
+    }
+
+    // Cleanup
+    drop(terminal);
+    stdout()
+        .execute(LeaveAlternateScreen)
+        .expect("Failed to leave alternate screen");
+    terminal::disable_raw_mode().expect("Failed to disable raw mode");
 }
 
-/// Initialize the game state
-fn init_game(_commands: Commands) {
-    // Initialize with default values
-    // Deck will be created, shuffled, and hands dealt
-    // For now, just log startup message
-    info!("Poker Card RPG - Terra-Deck");
-    info!("All systems initialized and ready!");
-    info!("Next: Implement Tasks 4-6 (TUI rendering, input, testing)");
+/// Handle playing the selected card
+fn play_selected_card(state: &AppUiState) {
+    if let Some(idx) = state.selected_card {
+        eprintln!("Playing card {}", idx);
+    }
 }
+
+mod ui;

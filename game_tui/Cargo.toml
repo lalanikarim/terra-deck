@@ -7,6 +7,6 @@ edition = "2021"
 bevy = "0.18.1"
 game_core = { path = "../game_core" }
 
-# TUI dependencies (to be added when implementing UI)
-# ratatui = "0.30"
-# crossterm = "0.29"
+# TUI dependencies
+ratatui = "0.29"
+crossterm = "0.28"
