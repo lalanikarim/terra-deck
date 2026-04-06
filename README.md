@@ -44,3 +44,4 @@ See the `docs/` folder for knowledge base:
 - [docs/BEVY_KNOWLEDGE.md](docs/BEVY_KNOWLEDGE.md) - Bevy ECS and system patterns
 - [docs/RATATUI_KNOWLEDGE.md](docs/RATATUI_KNOWLEDGE.md) - Terminal UI patterns
 - [docs/RAND_KNOWLEDGE.md](docs/RAND_KNOWLEDGE.md) - Random number generation in Rust
+- [docs/CODING_ERRORS.md](docs/CODING_ERRORS.md) - Common errors and solutions
