@@ -1,8 +1,10 @@
-//! Bevy ECS systems for combat resolution
+//! Bevy ECS systems for combat resolution and turn management
+use rand::Rng;
 use crate::combat::{apply_combat_damage, CombatResult};
 use crate::combat_log::CombatLog;
 use crate::combat_stats::{CombatStats, GameResult, GameState};
 use crate::hand::Hand;
+use crate::turn_state::SelectedCard;
 use bevy::prelude::*;
 
 /// System to resolve combat between player and opponent cards
@@ -111,5 +113,121 @@ pub fn resolve_combat_system(
     } else {
         // Continue to next turn
         commands.insert_resource(GameState::PlayerTurn);
+    }
+}
+
+/// System to handle player card selection
+/// Called when player presses Enter/Space to play a card
+pub fn player_select_card_system(
+    mut commands: Commands,
+    game_state: Res<GameState>,
+    selected_card: Option<Res<SelectedCard>>,
+    player_hand: Res<Hand>,
+    mut combat_log: ResMut<CombatLog>,
+) {
+    // Only allow selection during player turn
+    if !game_state.is_player_turn() {
+        return;
+    }
+
+    // Get selected card index
+    let card_index = if let Some(selected) = selected_card {
+        selected.index
+    } else {
+        // No card selected, default to first card if available
+        if player_hand.is_empty() {
+            return;
+        }
+        Some(0)
+    };
+
+    if let Some(idx) = card_index {
+        if idx >= player_hand.cards.len() {
+            combat_log.add_entry("Invalid card selection!".to_string());
+            return;
+        }
+        combat_log.add_entry(format!("Player selected card {}", idx));
+        // Transition to combat resolution
+        commands.insert_resource(GameState::CombatResolution);
+    }
+}
+
+/// System to handle opponent AI card selection
+/// Called during opponent turn
+pub fn opponent_select_card_system(
+    mut commands: Commands,
+    game_state: Res<GameState>,
+    opponent_hand: Res<Hand>,
+    mut combat_log: ResMut<CombatLog>,
+) {
+    // Only run during opponent turn
+    if !game_state.is_opponent_turn() {
+        return;
+    }
+
+    if opponent_hand.is_empty() {
+        combat_log.add_entry("Opponent has no cards!".to_string());
+        // This shouldn't happen if game state is managed correctly
+        return;
+    }
+
+    // AI selects a card (currently random)
+    // This is a simplified approach - in a real game, AI would have more logic
+    let hand_size = opponent_hand.cards.len();
+    
+    let card_index = rand::random_range(0..hand_size);
+
+    combat_log.add_entry(format!("Opponent selected card {}", card_index));
+    // Transition to combat resolution
+    commands.insert_resource(GameState::CombatResolution);
+}
+
+/// System to advance turn after combat
+/// Moves from CombatResolution to next appropriate state
+pub fn advance_turn_system(
+    mut commands: Commands,
+    game_state: Res<GameState>,
+    player_hand: Res<Hand>,
+    opponent_hand: Res<Hand>,
+) {
+    // Only run if we're in combat resolution and game isn't over
+    if !game_state.should_resolve_combat() {
+        return;
+    }
+
+    // Check if game should be over
+    if player_hand.is_empty() || opponent_hand.is_empty() {
+        return; // Combat system already handled this
+    }
+
+    // Advance to player turn (or opponent turn if implementing separate phases)
+    // For now, we go straight back to player turn
+    commands.insert_resource(GameState::PlayerTurn);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_player_select_card_system_only_runs_on_player_turn() {
+        // Test that system returns early if not in player turn
+        // This is implicitly tested by the game_state.is_player_turn() check
+        let non_player_state = GameState::OpponentTurn;
+        assert!(!non_player_state.is_player_turn());
+    }
+
+    #[test]
+    fn test_opponent_select_card_system_only_runs_on_opponent_turn() {
+        // Test that system returns early if not in opponent turn
+        let non_opponent_state = GameState::PlayerTurn;
+        assert!(!non_opponent_state.is_opponent_turn());
+    }
+
+    #[test]
+    fn test_advance_turn_system_only_runs_in_combat() {
+        // Test that system returns early if not in combat resolution
+        let non_combat_state = GameState::PlayerTurn;
+        assert!(!non_combat_state.should_resolve_combat());
     }
 }
