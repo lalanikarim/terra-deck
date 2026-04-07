@@ -1,7 +1,6 @@
 //! Game state management for the full combat loop
 
 use game_core::*;
-use rand::prelude::*;
 use std::fmt::Display;
 
 /// Current state of the game loop
@@ -169,8 +168,10 @@ impl FullGameState {
         let mut opponent_card_copy = opponent_card.clone();
 
         // Apply damage
-        let (player_dmg, player_crit) = apply_combat_damage(&player_card, &mut opponent_card_copy);
-        let (opponent_dmg, opponent_crit) = apply_combat_damage(&opponent_card, &mut player_card_copy);
+        let (player_dmg, player_result) = apply_combat_damage(&player_card, &mut opponent_card_copy);
+        let (opponent_dmg, opponent_result) = apply_combat_damage(&opponent_card, &mut player_card_copy);
+        let player_crit = matches!(player_result, CombatResult::CriticalHit);
+        let opponent_crit = matches!(opponent_result, CombatResult::CriticalHit);
 
         // Update cards in hands
         self.player_hand.cards[player_idx] = player_card_copy.clone();
@@ -227,23 +228,21 @@ impl FullGameState {
         player_card: &Card,
         opponent_card: &Card,
         player_dmg: u8,
-        opponent_dmg: u8,
+        _opponent_dmg: u8,
         player_crit: bool,
-        opponent_crit: bool,
+        _opponent_crit: bool,
     ) -> String {
         let player_arch = player_card.suit.archetype();
         let opponent_arch = opponent_card.suit.archetype();
 
         let crit_prefix = if player_crit { "CRITICAL! " } else { "" };
-        let opponent_crit_prefix = if opponent_crit { "CRITICAL! " } else { "" };
 
         format!(
-            "{}{} (vs {}) dealt {} damage, took {} damage",
+            "{}{} (vs {}) dealt {} damage",
             crit_prefix,
             player_arch,
             opponent_arch,
-            player_dmg,
-            opponent_crit_prefix
+            player_dmg
         )
     }
 

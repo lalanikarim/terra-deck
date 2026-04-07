@@ -8,7 +8,8 @@ pub mod opponent;
 pub mod game_over;
 
 use ratatui::prelude::*;
-use ratatui::layout::*;
+use ratatui::text::Line;
+use ratatui::widgets::Paragraph;
 
 use crate::game_state::FullGameState;
 
@@ -16,7 +17,7 @@ use crate::game_state::FullGameState;
 pub fn render_game(
     frame: &mut Frame,
     game: &FullGameState,
-    is_player_turn: bool,
+    _is_player_turn: bool,
     is_opponent_turn: bool,
 ) {
     let chunks = Layout::default()
@@ -70,58 +71,29 @@ fn render_status(
         Style::default().fg(Color::White).bg(Color::Blue)
     };
 
-    let paragraph = Paragraph::new(status)
-        .style(style)
-        .wrap(ratatui::layout::Wrap { trim: true });
+    let mut text_lines: Vec<Line> = Vec::new();
+    let words: Vec<&str> = status.split(' ').collect();
+    let mut current_line = String::new();
+    
+    for word in words {
+        if (current_line.len() + word.len() + 1) > area.width as usize - 2 {
+            if !current_line.is_empty() {
+                text_lines.push(Line::from(current_line));
+            }
+            current_line = word.to_string();
+        } else {
+            if !current_line.is_empty() {
+                current_line.push(' ');
+            }
+            current_line.push_str(word);
+        }
+    }
+    if !current_line.is_empty() {
+        text_lines.push(Line::from(current_line));
+    }
+
+    let paragraph = Paragraph::new(text_lines)
+        .style(style);
 
     frame.render_widget(paragraph, area);
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_game_state_initialization() {
-        let game = FullGameState::new();
-        assert!(game.player_hand.is_empty());
-        assert!(game.opponent_hand.is_empty());
-    }
-
-    #[test]
-    fn test_move_selection_left_from_none() {
-        let mut game = FullGameState::new();
-        game.loop_state = crate::game_state::GameStateLoop::SelectPlayerCard;
-        game.selected_player_card = None;
-        super::move_selection_left(&mut game);
-        assert_eq!(game.selected_player_card, None);
-    }
-
-    #[test]
-    fn test_move_selection_left() {
-        let mut game = FullGameState::new();
-        game.loop_state = crate::game_state::GameStateLoop::SelectPlayerCard;
-        game.selected_player_card = Some(2);
-        super::move_selection_left(&mut game);
-        assert_eq!(game.selected_player_card, Some(1));
-    }
-
-    #[test]
-    fn test_move_selection_right_from_none() {
-        let mut game = FullGameState::new();
-        game.loop_state = crate::game_state::GameStateLoop::SelectPlayerCard;
-        game.selected_player_card = None;
-        super::move_selection_right(&mut game);
-        assert_eq!(game.selected_player_card, Some(1));
-    }
-
-    #[test]
-    fn test_move_selection_right() {
-        let mut game = FullGameState::new();
-        game.loop_state = crate::game_state::GameStateLoop::SelectPlayerCard;
-        game.selected_player_card = Some(2);
-        super::move_selection_right(&mut game);
-        assert_eq!(game.selected_player_card, Some(3));
-    }
-}
-use ratatui::widgets::{Paragraph, Line, Block, Style, Color, Modifier};

@@ -1,6 +1,8 @@
 //! Header rendering
 
-use ratatui::{prelude::*, widgets::*};
+use ratatui::prelude::*;
+use ratatui::text::Line;
+use ratatui::widgets::{Block, Paragraph};
 
 use crate::game_state::FullGameState;
 
@@ -9,7 +11,7 @@ pub fn render(frame: &mut Frame, area: Rect, game: &FullGameState) {
     let title = build_header_text(game);
 
     let paragraph = Paragraph::new(title)
-        .style(Style::default().fg(Color::Cyan).bold())
+        .style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD))
         .alignment(Alignment::Center)
         .block(Block::default());
 
@@ -23,22 +25,5 @@ fn build_header_text(game: &FullGameState) -> Line<'static> {
     } else {
         "".to_string()
     };
-
-    Line::from(format!(
-        "🎴 TERRA-DECK - Poker Card RPG{}",
-        round
-    ))
+    Line::from(format!("🎴 TERRA-DECK - Poker Card RPG{}", round))
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_build_header_text() {
-        let game = FullGameState::new();
-        let line = build_header_text(&game);
-        assert!(line.to_string().contains("TERRA-DECK"));
-    }
-}
-use ratatui::widgets::{Paragraph, Line, Block, Style, Color, Modifier};

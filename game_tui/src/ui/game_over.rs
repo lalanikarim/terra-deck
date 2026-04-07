@@ -1,6 +1,8 @@
 //! Game over screen with full opponent reveal
 
-use ratatui::{prelude::*, widgets::*};
+use ratatui::prelude::*;
+use ratatui::text::Line;
+use ratatui::widgets::{Block, Paragraph};
 
 use crate::game_state::FullGameState;
 
@@ -106,4 +108,3 @@ fn get_rank_str(rank: game_core::Rank) -> String {
         game_core::Rank::Ace => "A".to_string(),
     }
 }
-use ratatui::widgets::{Paragraph, Line, Block, Style, Color, Modifier};

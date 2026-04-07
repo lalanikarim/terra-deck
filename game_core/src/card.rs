@@ -4,7 +4,7 @@ use crate::types::{Rank, Suit};
 use bevy::prelude::*;
 
 /// A card entity in the game
-#[derive(Debug, Clone, Component)]
+#[derive(Debug, Clone, PartialEq, Component)]
 pub struct Card {
     pub suit: Suit,
     pub rank: Rank,

@@ -1,11 +1,11 @@
 //! Poker Card RPG - TUI Application
 //! Full game integration with combat loop, deck management, and turns
 
-use std::io::{stdout, Write};
+use std::io::stdout;
 use std::time::Duration;
 
 use crossterm::{
-    event::{self, Event, KeyCode, KeyEvent, KeyModifiers, KeyboardEnhancementFlags, MouseEvent, PopKeyboardEnhancementFlags, PushKeyboardEnhancementFlags},
+    event::{self, Event, KeyCode, KeyEvent},
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
 };
@@ -45,7 +45,7 @@ fn main() {
         if event::poll(Duration::from_millis(50)).expect("Failed to poll events") {
             if let std::io::Result::Ok(Event::Key(key)) = event::read() {
                 match handle_key(&game, key) {
-                    Some(mut next_game) => {
+                    Some(next_game) => {
                         game = next_game;
                     }
                     None => {}

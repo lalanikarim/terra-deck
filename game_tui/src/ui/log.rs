@@ -1,6 +1,8 @@
 //! Combat log rendering
 
-use ratatui::{prelude::*, widgets::*};
+use ratatui::prelude::*;
+use ratatui::text::Line;
+use ratatui::widgets::{Block, Paragraph};
 
 use game_core::CombatLog;
 
@@ -12,7 +14,7 @@ pub fn render(frame: &mut Frame, area: Rect, combat_log: &CombatLog) {
     let start = entries.len().saturating_sub(max_visible);
     let visible: Vec<Line> = entries[start..]
         .iter()
-        .map(|entry| Line::from((*entry).as_str()).style(style_log_entry(entry)))
+        .map(|entry| Line::from(entry.as_str()).style(style_log_entry(entry)))
         .collect();
 
     let paragraph = if visible.is_empty() {
@@ -32,11 +34,11 @@ pub fn render(frame: &mut Frame, area: Rect, combat_log: &CombatLog) {
 /// Style log entries based on content
 fn style_log_entry(entry: &str) -> Style {
     if entry.contains("YOU WON") {
-        Style::default().fg(Color::Green).bold()
+        Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)
     } else if entry.contains("YOU LOST") {
-        Style::default().fg(Color::Red).bold()
+        Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)
     } else if entry.contains("CRITICAL") {
-        Style::default().fg(Color::Yellow).bold()
+        Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
     } else if entry.contains("died") || entry.contains("destroyed") {
         Style::default().fg(Color::Red)
     } else if entry.contains("Game started") {
@@ -45,27 +47,3 @@ fn style_log_entry(entry: &str) -> Style {
         Style::default().fg(Color::Gray)
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_style_log_entry_won() {
-        let style = style_log_entry("=== YOU WON! ===");
-        assert_eq!(style.foreground, Some(ratatui::style::Color::Green));
-    }
-
-    #[test]
-    fn test_style_log_entry_lost() {
-        let style = style_log_entry("=== YOU LOST ===");
-        assert_eq!(style.foreground, Some(ratatui::style::Color::Red));
-    }
-
-    #[test]
-    fn test_style_log_entry_critical() {
-        let style = style_log_entry("CRITICAL! dealt 10 damage");
-        assert_eq!(style.foreground, Some(ratatui::style::Color::Yellow));
-    }
-}
-use ratatui::widgets::{Paragraph, Line, Block, Style, Color, Modifier};

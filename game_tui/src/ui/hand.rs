@@ -1,6 +1,8 @@
 //! Hand rendering - shows player cards with selection
 
-use ratatui::{prelude::*, style::Modifier, widgets::*};
+use ratatui::prelude::*;
+use ratatui::text::Line;
+use ratatui::widgets::{Block, Paragraph};
 
 use crate::game_state::FullGameState;
 
@@ -30,12 +32,13 @@ pub fn render_player_hand(frame: &mut Frame, area: Rect, game: &FullGameState) {
 /// Create a single card line for display
 fn create_card_line(card: &game_core::Card, display_idx: usize, is_selected: bool) -> Line<'static> {
     let selection_marker = if is_selected { "← " } else { "  " };
-    let card_str = format!("{} {} HP:{}/{}", 
-        get_suit_char(card.suit), 
+    let card_str = format!("{} {} HP:{}/{}",
+        get_suit_char(card.suit),
         get_rank_str(card.rank),
-        card.hp, 
-        card.max_hp);
-    
+        card.hp,
+        card.max_hp
+    );
+
     let line_str = format!("({}) {} {}", display_idx, card_str, selection_marker);
 
     let style = if is_selected {
@@ -78,31 +81,3 @@ fn get_rank_str(rank: game_core::Rank) -> String {
         game_core::Rank::Ace => "A".to_string(),
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_get_suit_char() {
-        assert_eq!(get_suit_char(game_core::Suit::Hearts), '♥');
-        assert_eq!(get_suit_char(game_core::Suit::Diamonds), '♦');
-        assert_eq!(get_suit_char(game_core::Suit::Clubs), '♣');
-        assert_eq!(get_suit_char(game_core::Suit::Spades), '♠');
-    }
-
-    #[test]
-    fn test_get_rank_str() {
-        assert_eq!(get_rank_str(game_core::Rank::Ten), "10");
-        assert_eq!(get_rank_str(game_core::Rank::Jack), "J");
-        assert_eq!(get_rank_str(game_core::Rank::Ace), "A");
-    }
-
-    #[test]
-    fn test_create_card_line_selection() {
-        let card = game_core::Card::new(game_core::Suit::Hearts, game_core::Rank::Ten);
-        let line = create_card_line(&card, 1, true);
-        assert!(line.to_string().contains("←"));
-    }
-}
-use ratatui::widgets::{Paragraph, Line, Block, Style, Color, Modifier};

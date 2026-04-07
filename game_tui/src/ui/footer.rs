@@ -1,6 +1,8 @@
 //! Footer rendering with help text
 
-use ratatui::{prelude::*, widgets::*};
+use ratatui::prelude::*;
+use ratatui::text::Line;
+use ratatui::widgets::{Block, Paragraph};
 
 use crate::game_state::FullGameState;
 

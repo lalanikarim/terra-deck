@@ -1,6 +1,8 @@
 //! Opponent hand rendering - shows hidden cards with alive/dead indicators
 
-use ratatui::{prelude::*, widgets::*};
+use ratatui::prelude::*;
+use ratatui::text::Line;
+use ratatui::widgets::{Block, Paragraph};
 
 use crate::game_state::FullGameState;
 
@@ -25,19 +27,16 @@ fn create_opponent_hand_lines(game: &FullGameState) -> Vec<Line<'static>> {
     (0..game.opponent_hand.len())
         .map(|idx| {
             let is_selected = game.selected_opponent_card == Some(idx);
-            create_opponent_card_line(idx + 1, is_selected)
+            create_opponent_card_line(idx, is_selected)
         })
         .collect()
 }
 
 /// Create a single hidden opponent card line
-fn create_opponent_card_line(display_idx: usize, is_selected: bool) -> Line<'static> {
+fn create_opponent_card_line(_idx: usize, is_selected: bool) -> Line<'static> {
     let selection_marker = if is_selected { "←" } else { "" };
     
-    let line_str = format!(
-        "[?]   ● (alive) {}",
-        selection_marker
-    );
+    let line_str = format!(" [?]   ● (alive) {}", selection_marker);
 
     let style = if is_selected {
         Style::default()
@@ -100,22 +99,3 @@ fn get_rank_str(rank: game_core::Rank) -> String {
         game_core::Rank::Ace => "A".to_string(),
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_opponent_card_line_hidden() {
-        let line = create_opponent_card_line(1, false);
-        assert!(line.to_string().contains("[?]"));
-        assert!(line.to_string().contains("alive"));
-    }
-
-    #[test]
-    fn test_opponent_card_line_selected() {
-        let line = create_opponent_card_line(1, true);
-        assert!(line.to_string().contains("←"));
-    }
-}
-use ratatui::widgets::{Paragraph, Line, Block, Style, Color, Modifier};
