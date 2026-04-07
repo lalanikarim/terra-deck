@@ -9,6 +9,7 @@ pub mod combat_log;
 pub mod combat_stats;
 pub mod deck;
 pub mod game_loop;
+pub mod game_session;
 pub mod hand;
 pub mod systems;
 pub mod turn_state;

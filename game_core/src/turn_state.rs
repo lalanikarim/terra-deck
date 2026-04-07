@@ -57,6 +57,19 @@ impl SelectedCard {
             false
         }
     }
+
+    /// Adjust selection after cards have been removed from hand
+    /// Called when dead cards are removed to keep selection valid
+    pub fn on_cards_removed(&mut self, cards_removed: usize) {
+        if cards_removed == 0 {
+            return;
+        }
+        if let Some(idx) = self.index {
+            // If selection is beyond removal point, shift down
+            // If selection was removed, clamp to new max
+            self.index = Some(idx.saturating_sub(cards_removed));
+        }
+    }
 }
 
 #[cfg(test)]
