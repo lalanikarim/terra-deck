@@ -4,10 +4,10 @@ use ratatui::prelude::*;
 use ratatui::text::Line;
 use ratatui::widgets::{Block, Paragraph};
 
-use crate::game_state::FullGameState;
+use crate::game_state::GameSession;
 
 /// Render the player's hand with selectable cards
-pub fn render_player_hand(frame: &mut Frame, area: Rect, game: &FullGameState) {
+pub fn render_player_hand(frame: &mut Frame, area: Rect, game: &GameSession) {
     if game.player_hand.is_empty() {
         let placeholder = Paragraph::new("No cards in hand - Game Over")
             .style(Style::default().fg(Color::Red))
@@ -20,7 +20,7 @@ pub fn render_player_hand(frame: &mut Frame, area: Rect, game: &FullGameState) {
     let mut lines = Vec::new();
 
     for (idx, card) in game.player_hand.cards.iter().enumerate() {
-        let is_selected = game.selected_player_card == Some(idx);
+        let is_selected = game.selected_player_card.index == Some(idx);
         let card_line = create_card_line(card, idx + 1, is_selected);
         lines.push(card_line);
     }

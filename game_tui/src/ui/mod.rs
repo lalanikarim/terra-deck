@@ -11,12 +11,12 @@ use ratatui::prelude::*;
 use ratatui::text::Line;
 use ratatui::widgets::Paragraph;
 
-use crate::game_state::FullGameState;
+use crate::game_state::GameSession;
 
 /// Main render function with full game state
 pub fn render_game(
     frame: &mut Frame,
-    game: &FullGameState,
+    game: &GameSession,
     _is_player_turn: bool,
     is_opponent_turn: bool,
 ) {
@@ -45,7 +45,7 @@ pub fn render_game(
 fn render_status(
     frame: &mut Frame,
     area: Rect,
-    game: &FullGameState,
+    game: &GameSession,
     is_opponent_turn: bool,
 ) {
     let status = match game.loop_state {

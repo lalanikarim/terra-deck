@@ -4,10 +4,10 @@ use ratatui::prelude::*;
 use ratatui::text::Line;
 use ratatui::widgets::{Block, Paragraph};
 
-use crate::game_state::FullGameState;
+use crate::game_state::GameSession;
 
 /// Render game over screen
-pub fn render_game_over(frame: &mut Frame, area: Rect, game: &FullGameState) {
+pub fn render_game_over(frame: &mut Frame, area: Rect, game: &GameSession) {
     let result_text = match game.game_over_result {
         Some(game_core::GameResult::Won) => "🏆 YOU WON! 🏆",
         Some(game_core::GameResult::Lost) => "💀 YOU LOST 💀",
@@ -60,7 +60,7 @@ pub fn render_game_over(frame: &mut Frame, area: Rect, game: &FullGameState) {
 }
 
 /// Create revealed opponent hand lines
-fn create_revealed_opponent_lines(game: &FullGameState) -> Vec<Line<'static>> {
+fn create_revealed_opponent_lines(game: &GameSession) -> Vec<Line<'static>> {
     game.opponent_hand.cards
         .iter()
         .enumerate()

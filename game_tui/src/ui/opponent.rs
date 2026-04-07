@@ -4,10 +4,10 @@ use ratatui::prelude::*;
 use ratatui::text::Line;
 use ratatui::widgets::{Block, Paragraph};
 
-use crate::game_state::FullGameState;
+use crate::game_state::GameSession;
 
 /// Render opponent's hand (all cards hidden with alive indicators)
-pub fn render_opponent_hand(frame: &mut Frame, area: Rect, game: &FullGameState) {
+pub fn render_opponent_hand(frame: &mut Frame, area: Rect, game: &GameSession) {
     if game.opponent_hand.is_empty() {
         let paragraph = Paragraph::new("Opponent has no cards")
             .style(Style::default().fg(Color::DarkGray))
@@ -23,10 +23,10 @@ pub fn render_opponent_hand(frame: &mut Frame, area: Rect, game: &FullGameState)
 }
 
 /// Create opponent hand lines (all cards hidden)
-fn create_opponent_hand_lines(game: &FullGameState) -> Vec<Line<'static>> {
+fn create_opponent_hand_lines(game: &GameSession) -> Vec<Line<'static>> {
     (0..game.opponent_hand.len())
         .map(|idx| {
-            let is_selected = game.selected_opponent_card == Some(idx);
+            let is_selected = game.selected_opponent_card.index == Some(idx);
             create_opponent_card_line(idx, is_selected)
         })
         .collect()
@@ -51,7 +51,7 @@ fn create_opponent_card_line(_idx: usize, is_selected: bool) -> Line<'static> {
 }
 
 /// Create revealed opponent hand lines (shown at game over)
-pub fn create_revealed_opponent_lines(game: &FullGameState) -> Vec<Line<'static>> {
+pub fn create_revealed_opponent_lines(game: &GameSession) -> Vec<Line<'static>> {
     game.opponent_hand.cards
         .iter()
         .enumerate()

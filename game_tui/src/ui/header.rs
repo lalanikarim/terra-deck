@@ -4,10 +4,10 @@ use ratatui::prelude::*;
 use ratatui::text::Line;
 use ratatui::widgets::{Block, Paragraph};
 
-use crate::game_state::FullGameState;
+use crate::game_state::GameSession;
 
 /// Render game header
-pub fn render(frame: &mut Frame, area: Rect, game: &FullGameState) {
+pub fn render(frame: &mut Frame, area: Rect, game: &GameSession) {
     let title = build_header_text(game);
 
     let paragraph = Paragraph::new(title)
@@ -19,7 +19,7 @@ pub fn render(frame: &mut Frame, area: Rect, game: &FullGameState) {
 }
 
 /// Build header text with game info
-fn build_header_text(game: &FullGameState) -> Line<'static> {
+fn build_header_text(game: &GameSession) -> Line<'static> {
     let round = if game.current_combat_round > 0 {
         format!(" - Round {}", game.current_combat_round)
     } else {

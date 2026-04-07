@@ -4,10 +4,10 @@ use ratatui::prelude::*;
 use ratatui::text::Line;
 use ratatui::widgets::{Block, Paragraph};
 
-use crate::game_state::FullGameState;
+use crate::game_state::GameSession;
 
 /// Render footer with current controls
-pub fn render(frame: &mut Frame, area: Rect, game: &FullGameState) {
+pub fn render(frame: &mut Frame, area: Rect, game: &GameSession) {
     let help_text = get_help_text_for_state(game);
 
     let paragraph = Paragraph::new(help_text)
@@ -18,7 +18,7 @@ pub fn render(frame: &mut Frame, area: Rect, game: &FullGameState) {
 }
 
 /// Get help text based on game state
-fn get_help_text_for_state(game: &FullGameState) -> Line<'static> {
+fn get_help_text_for_state(game: &GameSession) -> Line<'static> {
     match game.loop_state {
         crate::game_state::GameStateLoop::SelectPlayerCard => {
             Line::from("←→ Move selection | Enter Select card | q Quit")
@@ -49,7 +49,7 @@ mod tests {
 
     #[test]
     fn test_get_help_text_select_player() {
-        let mut game = FullGameState::new();
+        let mut game = GameSession::new();
         game.loop_state = GameStateLoop::SelectPlayerCard;
         let text = get_help_text_for_state(&game);
         assert!(text.to_string().contains("←→"));
@@ -57,7 +57,7 @@ mod tests {
 
     #[test]
     fn test_get_help_text_confirm() {
-        let mut game = FullGameState::new();
+        let mut game = GameSession::new();
         game.loop_state = GameStateLoop::ConfirmAttack;
         let text = get_help_text_for_state(&game);
         assert!(text.to_string().contains("Y"));
@@ -65,7 +65,7 @@ mod tests {
 
     #[test]
     fn test_get_help_text_game_over() {
-        let mut game = FullGameState::new();
+        let mut game = GameSession::new();
         game.loop_state = GameStateLoop::GameOver;
         let text = get_help_text_for_state(&game);
         assert!(text.to_string().contains("R"));

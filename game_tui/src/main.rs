@@ -25,12 +25,15 @@ fn main() {
     let mut terminal = Terminal::new(backend).expect("Failed to create terminal");
 
     // Initialize game
-    let mut game = FullGameState::new();
+    let mut game = GameSession::new();
     game.start_new_game();
 
     println!("🎴 Poker Card RPG - Terra-Deck");
-    println!("Game initialized with {} player cards and {} opponent cards",
-          game.player_hand.len(), game.opponent_hand.len());
+    println!(
+        "Game initialized with {} player cards and {} opponent cards",
+        game.player_hand.len(),
+        game.opponent_hand.len()
+    );
 
     // Main game loop
     loop {
@@ -44,9 +47,11 @@ fn main() {
         // Poll for input events
         if event::poll(Duration::from_millis(50)).expect("Failed to poll events") {
             if let std::io::Result::Ok(Event::Key(key)) = event::read() {
-                match handle_key(&game, key) {
-                    Some(next_game) => {
-                        game = next_game;
+                match handle_key(&mut game, key) {
+                    Some(should_quit) => {
+                        if should_quit {
+                            break;
+                        }
                     }
                     None => {}
                 }
@@ -78,10 +83,27 @@ fn cleanup_terminal() -> std::io::Result<()> {
 }
 
 /// Handle key input based on current game state
-fn handle_key(game: &FullGameState, key: KeyEvent) -> Option<FullGameState> {
+/// Returns Some(true) if should quit, Some(false) or None otherwise
+fn handle_key(game: &mut GameSession, key: KeyEvent) -> Option<bool> {
     // If opponent turn or resolving combat, ignore player input
-    if game.is_opponent_turn() || game.is_resolving() || game.loop_state == GameStateLoop::GameOver {
+    if game.is_opponent_turn() || game.is_resolving() {
         return None;
+    }
+
+    // Game over - only handle restart or quit
+    if game.is_game_over() {
+        match key.code {
+            KeyCode::Char('r') | KeyCode::Char('R') => {
+                game.start_new_game();
+                println!("Game restarted!");
+                return Some(false);
+            }
+            KeyCode::Char('q') => {
+                println!("Quitting game...");
+                return Some(true);
+            }
+            _ => return None,
+        }
     }
 
     // Only handle key press events
@@ -90,92 +112,89 @@ fn handle_key(game: &FullGameState, key: KeyEvent) -> Option<FullGameState> {
         _ => return None,
     }
 
-    let mut new_game = game.clone();
-
     match key.code {
         KeyCode::Char('q') => {
             println!("Quitting game...");
-            new_game.loop_state = GameStateLoop::Quit;
-            Some(new_game)
+            return Some(true);
         }
         KeyCode::Left | KeyCode::Char('h') => {
-            move_selection_left(&mut new_game);
-            Some(new_game)
+            move_selection_left(game);
         }
         KeyCode::Right | KeyCode::Char('l') => {
-            move_selection_right(&mut new_game);
-            Some(new_game)
+            move_selection_right(game);
         }
         KeyCode::Enter | KeyCode::Char(' ') => {
-            handle_enter(&mut new_game);
-            Some(new_game)
+            handle_enter(game);
         }
         KeyCode::Char('y') | KeyCode::Char('Y') => {
-            confirm_attack(&mut new_game);
-            Some(new_game)
+            confirm_attack(game);
         }
-        KeyCode::Char('n') | KeyCode::Char('N') => {
-            cancel_attack(&mut new_game);
-            Some(new_game)
+        KeyCode::Char('n') | KeyCode::Char('N') | KeyCode::Esc => {
+            cancel_attack(game);
         }
-        KeyCode::Esc => {
-            cancel_attack(&mut new_game);
-            Some(new_game)
-        }
-        KeyCode::Char('r') | KeyCode::Char('R') => {
-            if new_game.loop_state == GameStateLoop::GameOver {
-                new_game.start_new_game();
-            }
-            Some(new_game)
-        }
-        _ => None,
+        _ => {}
     }
+
+    None
 }
 
 /// Move selection left
-fn move_selection_left(game: &mut FullGameState) {
+fn move_selection_left(game: &mut GameSession) {
     if game.loop_state == GameStateLoop::SelectPlayerCard {
-        if let Some(idx) = game.selected_player_card {
-            if game.selected_player_card.is_some() && game.selected_player_card.unwrap() < game.player_hand.len() {
-                game.selected_player_card = Some(if idx == 0 { game.player_hand.len() - 1 } else { idx - 1 });
-            }
+        if let Some(_idx) = game.selected_player_card.index {
+            game.selected_player_card.previous(game.player_hand.len().saturating_sub(1));
         }
     } else if game.loop_state == GameStateLoop::SelectOpponentTarget {
-        if let Some(idx) = game.selected_opponent_card {
-            if game.selected_opponent_card.is_some() && game.selected_opponent_card.unwrap() < game.opponent_hand.len() {
-                game.selected_opponent_card = Some(if idx == 0 { game.opponent_hand.len() - 1 } else { idx - 1 });
-            }
+        if let Some(_idx) = game.selected_opponent_card.index {
+            game.selected_opponent_card.previous(game.opponent_hand.len().saturating_sub(1));
         }
     }
 }
 
 /// Move selection right
-fn move_selection_right(game: &mut FullGameState) {
+fn move_selection_right(game: &mut GameSession) {
     if game.loop_state == GameStateLoop::SelectPlayerCard {
-        game.selected_player_card = Some(game.selected_player_card.unwrap_or(0));
-        if let Some(idx) = game.selected_player_card {
-            game.selected_player_card = Some((idx + 1) % game.player_hand.len());
+        if game.player_hand.is_empty() {
+            return;
         }
+        if game.selected_player_card.index.is_none() {
+            game.selected_player_card = game_core::turn_state::SelectedCard::new(0);
+        }
+        game.selected_player_card.next(game.player_hand.len().saturating_sub(1));
     } else if game.loop_state == GameStateLoop::SelectOpponentTarget {
-        game.selected_opponent_card = Some(game.selected_opponent_card.unwrap_or(0));
-        if let Some(idx) = game.selected_opponent_card {
-            game.selected_opponent_card = Some((idx + 1) % game.opponent_hand.len());
+        if game.opponent_hand.is_empty() {
+            return;
         }
+        if game.selected_opponent_card.index.is_none() {
+            game.selected_opponent_card = game_core::turn_state::SelectedCard::new(0);
+        }
+        game.selected_opponent_card.next(game.opponent_hand.len().saturating_sub(1));
     }
 }
 
 /// Handle Enter key (advance to next step)
-fn handle_enter(game: &mut FullGameState) {
+fn handle_enter(game: &mut GameSession) {
     match game.loop_state {
         GameStateLoop::SelectPlayerCard => {
-            if game.selected_player_card.is_some() && game.selected_player_card.unwrap() < game.player_hand.len() {
-                game.loop_state = GameStateLoop::SelectOpponentTarget;
-                game.selected_opponent_card = Some(0);
+            if game.player_hand.is_empty() {
+                return;
+            }
+            if let Some(player_idx) = game.selected_player_card.index {
+                if player_idx < game.player_hand.len() {
+                    game.loop_state = game.loop_state.advance_after_player_card_selected();
+                    if !game.opponent_hand.is_empty() {
+                        game.selected_opponent_card = game_core::turn_state::SelectedCard::new(0);
+                    }
+                }
             }
         }
         GameStateLoop::SelectOpponentTarget => {
-            if game.selected_opponent_card.is_some() && game.selected_opponent_card.unwrap() < game.opponent_hand.len() {
-                game.loop_state = GameStateLoop::ConfirmAttack;
+            if game.selected_opponent_card.index.is_some() {
+                if let Some(opponent_idx) = game.selected_opponent_card.index {
+                    if opponent_idx < game.opponent_hand.len() {
+                        game.loop_state = game.loop_state.advance_after_target_selected();
+                    }
+                }
             }
         }
         GameStateLoop::ConfirmAttack => {
@@ -186,32 +205,32 @@ fn handle_enter(game: &mut FullGameState) {
 }
 
 /// Confirm attack and resolve combat
-fn confirm_attack(game: &mut FullGameState) {
-    if let (Some(player_idx), Some(opponent_idx)) = 
-        (game.selected_player_card, game.selected_opponent_card) {
-        
+fn confirm_attack(game: &mut GameSession) {
+    if let (Some(player_idx), Some(opponent_idx)) =
+        (game.selected_player_card.index, game.selected_opponent_card.index)
+    {
         // Ensure indices are valid
-        let valid_player_idx = player_idx.min(game.player_hand.len() - 1);
-        let valid_opponent_idx = opponent_idx.min(game.opponent_hand.len() - 1);
+        let valid_player_idx = player_idx.min(game.player_hand.len().saturating_sub(1));
+        let valid_opponent_idx = opponent_idx.min(game.opponent_hand.len().saturating_sub(1));
 
         let result = game.resolve_player_attack(valid_player_idx, valid_opponent_idx);
-        println!("Combat: You dealt {} damage, took {} damage", 
-              result.player_dmg, result.opponent_dmg);
+        println!(
+            "Combat: You dealt {} damage, took {} damage",
+            result.player_dmg, result.opponent_dmg
+        );
 
         // Reset for next turn
-        game.loop_state = GameStateLoop::SelectPlayerCard;
-        game.selected_player_card = Some(0);
-        game.selected_opponent_card = None;
+        game.loop_state = game.loop_state.reset_to_player_turn();
+        if !game.player_hand.is_empty() {
+            game.selected_player_card = game_core::turn_state::SelectedCard::new(0);
+        }
+        game.selected_opponent_card = game_core::turn_state::SelectedCard::none();
+        game.current_combat_round += 1;
     }
 }
 
 /// Cancel attack and go back
-fn cancel_attack(game: &mut FullGameState) {
-    match game.loop_state {
-        GameStateLoop::SelectOpponentTarget | GameStateLoop::ConfirmAttack => {
-            game.loop_state = GameStateLoop::SelectPlayerCard;
-            game.selected_opponent_card = None;
-        }
-        _ => {}
-    }
+fn cancel_attack(game: &mut GameSession) {
+    game.loop_state = game.loop_state.cancel_target_selection();
+    game.selected_opponent_card = game_core::turn_state::SelectedCard::none();
 }
