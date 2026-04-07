@@ -24,12 +24,12 @@ pub fn render_game(
         .direction(Direction::Vertical)
         .margin(1)
         .constraints([
-            Constraint::Length(3),       // Header
-            Constraint::Length(4),       // Player hand
-            Constraint::Min(8),          // Combat log
-            Constraint::Length(4),       // Opponent hand
-            Constraint::Length(2),       // Footer
-            Constraint::Length(1),       // Status
+            Constraint::Length(3),         // Header
+            Constraint::Length(7),         // Player hand (5 cards + title + spacing)
+            Constraint::Min(6),             // Combat log
+            Constraint::Length(7),         // Opponent hand (5 cards + title + spacing)
+            Constraint::Length(2),         // Footer
+            Constraint::Length(1),         // Status
         ])
         .split(frame.area());
 
