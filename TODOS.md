@@ -45,16 +45,27 @@ All tasks complete! 🎉
   - Combat mechanics verification
   - SelectedCard navigation tests
 
+- [x] **Task 7: Full Game Loop Integration**
+  - Three-step combat flow: Select Card → Select Target → Confirm
+  - GameStateLoop FSM with 10 states
+  - FullGameState struct with deck/shuffle/hands
+  - Hidden opponent cards display ([?] ● markers only)
+  - Combat resolution with damage calculation
+  - Dead card removal
+  - Win/loss detection
+  - Game over screen with opponent reveal
+  - Restart functionality (R key)
+
 ---
 
 ## Test Summary
 
 | Testsuite | Tests | Passing |
 |--|-----|----|
-| Game Core (card, deck, hand, types, combat, etc.) | 92 | ✅ 92 |
+| Game Core (card, deck, hand, types, combat, etc.) | 91 | ✅ 91 |
 | TUI Unit Tests | 5 | ✅ 5 |
 | Integration Tests | 9 | ✅ 9 |
-| **TOTAL** | **106** | **✅ 106** |
+| **TOTAL** | **105** | **✅ 105** |
 
 ---
 
@@ -66,14 +77,19 @@ cargo run --package game_tui
 
 ### Controls:
 - **← →** or **h l** - Navigate cards
-- **Space / Enter** - Play selected card
-- **q / Esc** - Quit
+- **Space / Enter** - Select card and advance to target selection
+- **Y / Enter** - Confirm attack (after selecting card and target)
+- **N / Esc** - Cancel and go back
+- **R** - Restart after game over
+- **q** - Quit
 
 ---
 
 ## Git History
 
 ```
+f79fa10 - Fix Task 7: Complete UI rendering and fix compilation issues
+13dd468 - WIP Task 7: Full Game Loop Integration (partially complete)
 94a0846 - Complete Task 6: End-to-End integration tests
 cb7dfa6 - Merge Tasks 4-5: Complete TUI with full rendering and input
 69eb0f6 - Complete Task 4: Build TUI rendering components
@@ -90,7 +106,7 @@ f7a6f86 - Create TODOS.md with detailed task breakdown
 
 ```
 bevygame/
-├── game_core/          ← Core game logic (92 tests)
+├── game_core/          ← Core game logic (91 tests)
 │   ├── src/
 │   │   ├── ai.rs          ← AI opponent logic
 │   │   ├── card.rs        ← Card struct and methods
@@ -103,15 +119,18 @@ bevygame/
 │   │   ├── turn_state.rs  ← SelectedCard
 │   │   └── types.rs       ← Suit, Rank, Archetype
 │   └── Cargo.toml
-├── game_tui/           ← Terminal UI (9 tests)
+├── game_tui/           ← Terminal UI (14 tests)
 │   ├── src/
 │   │   ├── main.rs       ← Terminal setup and loop
+│   │   ├── game_state.rs ← Game loop state machine
 │   │   └── ui/
 │   │       ├── footer.rs
+│   │       ├── game_over.rs
 │   │       ├── hand.rs
 │   │       ├── header.rs
 │   │       ├── log.rs
-│   │       └── mod.rs
+│   │       ├── mod.rs
+│   │       └── opponent.rs
 │   ├── tests/
 │   │   └── integration_tests.rs
 │   └── Cargo.toml
@@ -125,97 +144,6 @@ bevygame/
 ```
 
 ---
-
-## 🚧 Pending Tasks
-
-These tasks are required to make the game fully playable.
-
-### Task 7: Full Game Loop Integration
-**Goal**: Connect UI with game_core systems for actual gameplay
-
-**What needs to be done:**
-
-1. **Deck and Hand Management**
-   - [ ] Initialize full deck at game start (52 cards)
-   - [ ] Shuffle deck randomly
-   - [ ] Deal 5 cards to player and opponent hands
-   - [ ] Update TUI to use real hands from resources
-   - [ ] Refill hands from deck when needed?
-
-2. **Combat Trigger and Resolution**
-   - [ ] When Space pressed → trigger combat between selected cards
-   - [ ] Call `apply_combat_damage()` from game_core
-   - [ ] Update card HP in hands based on combat result
-   - [ ] Display combat log entries with colored text
-   - [ ] Show critical hits, absorbs, multipliers
-   - [ ] **Keep opponent card hidden** - only show suit/suit archetype
-
-3. **Dead Card Removal**
-   - [ ] Call `Hand::remove_dead_cards()` after combat
-   - [ ] Update TUI to show new hand state (fewer cards)
-   - [ ] Log which cards died
-   - [ ] Handle case where player has no cards left
-
-4. **Turn Progression**
-   - [ ] Track current turn (PlayerTurn → OpponentTurn → Combat → PlayerTurn)
-   - [ ] AI opponent selects card after player plays
-   - [ ] Disable input during opponent turn (waiting visual)
-   - [ ] Reset selection after each turn
-
-5. **Win/Loss Detection**
-   - [ ] Check `GameState` after each combat round
-   - [ ] Display "YOU WON!" or "YOU LOST!" message
-   - [ ] **Reveal all opponent cards at game end only**
-   - [ ] Show final scoreboard (cards remaining, damage dealt)
-   - [ ] Option to restart or quit
-
-6. **Restart Game**
-   - [ ] Create `reset_game()` function
-   - [ ] Re-shuffle deck, re-deal hands
-   - [ ] Clear combat log
-   - [ ] Reset to initial state
-
----
-
-## Opponent Card Display Rules ⚡
-
-**During gameplay:**
-- Show as `[?] ●` (alive) or `[X] ✕` (dead)
-- **NO HP values visible** - keeps opponent completely hidden
-- **NO card values revealed** until game end
-- Only alive/dead status shown
-
-**Example opponent hand display:**
-```
-OPPONENT'S HAND:
- [?] ●  (alive)
- [?] ●  (alive)
- [X] ✕  (dead - removed this turn)
- [?] ●  (alive)
- [X] ✕  (dead)
-```
-
-**At game end (victory screen):**
-```
-OPPONENT'S HAND (REVEALED):
- [?] ♦ 5  HP:0/5   (was dead)
- [?] ♣ J HP:3/11   (alive, took 8 damage)
- [X] ♠ Q HP:0/12  (was dead)
-```
-
-**Combat log shows archetype but not card value:**
-```
-✓ Your ♥ 10 (Rock) vs Opponent ? (Scissors)
-  → Rock beats Scissors! You deal 5 damage
-  → Opponent hits back, but you absorb 4 damage (0 taken)
-```
-
-**What files to modify/create:**
-- `game_tui/src/main.rs` (major rewrite needed)
-- `game_tui/src/game_state.rs` (new - track game loop state)
-- `game_tui/src/ui/mod.rs` (update render to show combat state)
-- `game_tui/src/ui/hand.rs` (show HP updates, opponent hidden)
-- `game_tui/src/ui/opponent.rs` (new - hidden opponent display)
 
 ## Next Steps (Future)
 
