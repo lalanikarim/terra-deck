@@ -181,15 +181,85 @@ bevygame/
 
 ---
 
-## Next Steps (Future)
+## Phase 2: WASM Renderer
 
-These were out of scope for the initial sprint, but could be implemented later:
+See [WASM_IMPLEMENTATION.md](./renderers/wasm/WASM_IMPLEMENTATION.md) for full details.
+
+### Phase 2.1: Foundation
+- [ ] **Task 9: Create WASM crate structure**
+  - Create `renderers/wasm/crate/` with lib.cdylib crate
+  - Add wasm-bindgen, web-sys, serde-wasm-bindgen dependencies
+  - Setup Cargo.toml with wasm-specific config
+  - Write build.sh and dev.sh scripts
+
+- [ ] **Task 10: Setup HTML scaffolding**
+  - Create `renderers/wasm/www/` with index.html, main.css, main.js
+  - Add Canvas 2D element for game rendering
+  - Wire up wasm-bindgen imports
+  - Get "Hello World" rendering in browser
+
+### Phase 2.2: Core Integration
+- [ ] **Task 11: WASM bridge layer**
+  - Expose GameSession API via wasm-bindgen
+  - Implement #[wasm_bindgen] annotated functions
+  - Handle JsValue ↔ Rust type conversions
+  - Add error handling for WASM ↔ JS interop
+  
+- [ ] **Task 12: Canvas renderer**
+  - Implement card rendering on HTML5 Canvas
+  - Draw suit symbols (♠♥♣♦) and ranks
+  - Render player hand with selection highlight
+  - Show opponent cards as hidden ([?] markers)
+  - Display combat log as text overlay
+
+### Phase 2.3: Game Loop & Interop
+- [ ] **Task 13: RequestAnimationFrame loop**
+  - Implement continuous render loop
+  - Expose on_frame() callback to JS
+  - Sync state efficiently without full redraw
+  - Batch canvas updates for performance
+
+- [ ] **Task 14: State serialization**
+  - Export GameState to JSON for rendering
+  - Use serde-wasm-bindgen for complex types
+  - Minimize cross-boundary calls
+  - Cache serialized state when possible
+
+### Phase 2.4: Mobile Support
+- [ ] **Task 15: Responsive design**
+  - Canvas auto-resizes with viewport
+  - CSS media queries for tablet/mobile
+  - Touch event handlers (tap, swipe)
+  - 44px minimum hitboxes for cards
+
+- [ ] **Task 16: Browser compatibility**
+  - Test on Chrome, Firefox, Safari
+  - Handle iOS Safari quirks
+  - Add fallback fonts
+  - Optimize for slower 4G connections
+
+### Phase 2.5: Tests & Deployment
+- [ ] **Task 17: E2E testing**
+  - Playwright tests for game flow
+  - Manual testing across browsers
+  - Performance benchmarks (60 FPS target)
+  - Memory leak testing
+
+- [ ] **Task 18: Production build**
+  - wasm-opt optimization
+  - Gzip/Brotli compression
+  - Deploy to GitHub Pages
+  - Add Lighthouse performance score
+
+---
+
+## Phase 3: Future Enhancements (Post-WASM)
 
 - [ ] **Multi-round battles** - Combat continues until both hands empty
 - [ ] **Smart AI opponent** - Use combat logic to pick best card each turn
 - [ ] **Card drawing between turns** - Pull from deck when hand gets low
 - [ ] **Card synergies and abilities** - Special effects for card combos
 - [ ] **Persistent save/load** - Resume game later
-- [ ] **Transition to Bevy graphics** - Full GUI with sprites and animations (Phase 2)
+- [ ] **Transition to Bevy graphics** - Full GUI with sprites and animations
 - [ ] **Sound effects** - Combat sounds, card play sounds
 - [ ] **Achievements system** - Track wins, combos, perfect games
