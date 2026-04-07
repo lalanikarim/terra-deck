@@ -56,16 +56,25 @@ All tasks complete! 🎉
   - Game over screen with opponent reveal
   - Restart functionality (R key)
 
+### Architecture Refactoring
+- [x] **Task 8: Separate Game Logic from UI**
+  - Moved GameStateLoop to `game_core/src/game_loop.rs`
+  - Created `GameSession` in `game_core/src/game_session.rs`
+  - Consolidated combat orchestration in game_core
+  - Simplified game_tui to only handle rendering and input
+  - Added 19 new tests in game_core
+  - 242 lines of game logic moved from UI to core
+
 ---
 
 ## Test Summary
 
 | Testsuite | Tests | Passing |
 |--|-----|----|
-| Game Core (card, deck, hand, types, combat, etc.) | 91 | ✅ 91 |
-| TUI Unit Tests | 5 | ✅ 5 |
+| Game Core (card, deck, hand, types, combat, game_loop, game_session) | 110 | ✅ 110 |
+| TUI Unit Tests | 3 | ✅ 3 |
 | Integration Tests | 9 | ✅ 9 |
-| **TOTAL** | **105** | **✅ 105** |
+| **TOTAL** | **122** | **✅ 122** |
 
 ---
 
@@ -88,16 +97,14 @@ cargo run --package game_tui
 ## Git History
 
 ```
+2b4c30a - Step 3: Refactor game_tui to use game_core::GameSession
+20661a8 - Step 2: Add GameSession to game_core
+0cbf40b - Step 1: Add GameStateLoop enum to game_core
+5629057 - Fix UI layout - allocate more space for 5 cards
+255bc65 - Update TODOS.md and README.md to reflect Task 7 completion
 f79fa10 - Fix Task 7: Complete UI rendering and fix compilation issues
 13dd468 - WIP Task 7: Full Game Loop Integration (partially complete)
 94a0846 - Complete Task 6: End-to-End integration tests
-cb7dfa6 - Merge Tasks 4-5: Complete TUI with full rendering and input
-69eb0f6 - Complete Task 4: Build TUI rendering components
-407c6c2 - Complete Task 3: Create TUI binary crate
-fb6e4fe - Complete Task 2: Turn Management FSM
-aca2a5d - Complete Task 1: Implement combat system logic
-192b3dd - Update project organization
-f7a6f86 - Create TODOS.md with detailed task breakdown
 ```
 
 ---
@@ -106,7 +113,7 @@ f7a6f86 - Create TODOS.md with detailed task breakdown
 
 ```
 bevygame/
-├── game_core/          ← Core game logic (91 tests)
+├── game_core/          ← Core game logic (110 tests)
 │   ├── src/
 │   │   ├── ai.rs          ← AI opponent logic
 │   │   ├── card.rs        ← Card struct and methods
@@ -114,15 +121,17 @@ bevygame/
 │   │   ├── combat_log.rs  ← Event logging
 │   │   ├── combat_stats.rs← GameState, GameResult
 │   │   ├── deck.rs        ← Deck management
+│   │   ├── game_loop.rs   ← GameStateLoop FSM (NEW)
+│   │   ├── game_session.rs← Full game state management (NEW)
 │   │   ├── hand.rs        ← Hand management
 │   │   ├── systems.rs     ← Combat systems
 │   │   ├── turn_state.rs  ← SelectedCard
 │   │   └── types.rs       ← Suit, Rank, Archetype
 │   └── Cargo.toml
-├── game_tui/           ← Terminal UI (14 tests)
+├── game_tui/           ← Terminal UI (12 tests)
 │   ├── src/
-│   │   ├── main.rs       ← Terminal setup and loop
-│   │   ├── game_state.rs ← Game loop state machine
+│   │   ├── main.rs       ← Terminal setup and input handling
+│   │   ├── game_state.rs ← Re-exports from game_core
 │   │   └── ui/
 │   │       ├── footer.rs
 │   │       ├── game_over.rs
@@ -142,6 +151,33 @@ bevygame/
 ├── TODOS.md            ← This file
 └── README.md           ← Project overview
 ```
+
+---
+
+## Architecture
+
+### Separation of Concerns
+
+**game_core** (Domain Logic):
+- All game mechanics and state management
+- GameStateLoop finite state machine
+- GameSession orchestrates entire game
+- Deck, Hand, Card, Combat logic
+- **Testable without UI dependencies**
+
+**game_tui** (UI Layer):
+- Terminal rendering with ratatui
+- Input handling (keyboard)
+- Maps user input to game actions
+- **Pure UI component - can be replaced with Bevy GUI**
+
+### Design Benefits
+
+✅ **Testable**: All game logic in game_core with 110 unit tests  
+✅ **Renderer Agnostic**: Same game_core works with TUI or GUI  
+✅ **No Coupling**: UI doesn't know about game mechanics  
+✅ **Clean API**: game_tui calls simple methods on GameSession  
+✅ **Future Proof**: Easy to add new renderers (Bevy, web, mobile)
 
 ---
 
