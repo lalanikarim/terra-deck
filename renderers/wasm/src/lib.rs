@@ -1,12 +1,13 @@
-//! Terra-Deck WASM Canvas Renderer - Optimized
+//! Terra-Deck WASM Canvas Renderer - HP System
+
 use wasm_bindgen::prelude::*;
-use web_sys::{HtmlCanvasElement, CanvasRenderingContext2d, MouseEvent};
+use web_sys::{CanvasRenderingContext2d, MouseEvent, KeyboardEvent, HtmlCanvasElement};
 
-pub mod cards;
-pub mod combat_effects;
+pub mod canvases;
+pub mod game_core_bridge;
 
-use cards::Deck;
-use combat_effects::CombatEffects;
+use canvases::render::{draw_rect, draw_text, draw_text_centered};
+use game_core_bridge::{GameState, BridgeHand};
 
 #[wasm_bindgen]
 extern "C" {
@@ -14,70 +15,23 @@ extern "C" {
     fn log(s: &str);
 }
 
-pub struct GameState {
-    pub player_hand: Deck,
-    pub opponent_hand: Deck,
-    pub combat_effects: CombatEffects,
-    pub width: u32,
-    pub height: u32,
-}
-
-impl GameState {
-    pub fn new(width: u32, height: u32) -> Self {
-        // Player cards at bottom
-        let mut player_hand = Deck::new(100, 150);
-        player_hand.offset_y = height as f64 - 180.0;
-        player_hand.add_test_cards();
-        player_hand.center_in_width(width);
-        player_hand.recalculate_positions();
-
-        // Opponent cards at top
-        let mut opponent_hand = Deck::new(100, 150);
-        opponent_hand.offset_y = 50.0;
-        opponent_hand.add_test_cards();
-        for card in &mut opponent_hand.cards {
-            card.is_face_up = false;  // Face down
-        }
-        opponent_hand.center_in_width(width);
-        opponent_hand.recalculate_positions();
-
-        GameState {
-            player_hand,
-            opponent_hand,
-            combat_effects: CombatEffects::new(),
-            width,
-            height,
-        }
-    }
-
-    pub fn update(&mut self, delta_time: f64) {
-        self.combat_effects.update(delta_time);
-    }
-}
-
-fn draw_rect(ctx: &mut CanvasRenderingContext2d, x: f64, y: f64, w: f64, h: f64, color: &str) {
-    let _ = ctx.set_fill_style_str(color);
-    ctx.fill_rect(x, y, w, h);
-}
-
 #[wasm_bindgen]
 pub struct CanvasApplication {
     canvas: HtmlCanvasElement,
     ctx: CanvasRenderingContext2d,
     game_state: GameState,
+    width: u32,
+    height: u32,
 }
 
 #[wasm_bindgen]
 impl CanvasApplication {
     #[wasm_bindgen(constructor)]
     pub fn new(canvas_id: &str) -> Result<CanvasApplication, JsValue> {
-        #[cfg(debug_assertions)]
-        console_error_panic_hook::set_once();
-
-        let document = web_sys::window()
-            .ok_or("no window")?
-            .document()
-            .ok_or("no document")?;
+        let document = match web_sys::window().and_then(|w| w.document()) {
+            Some(d) => d,
+            None => return Err("no document".into()),
+        };
 
         let canvas: HtmlCanvasElement = document
             .get_element_by_id(canvas_id)
@@ -96,109 +50,152 @@ impl CanvasApplication {
             .ok_or("no 2d context")?
             .unchecked_into::<CanvasRenderingContext2d>();
 
-        let game_state = GameState::new(width, height);
+        let game_state = GameState::new_test_game();
         
-        log("Terra-Deck initialized - Cards centered!");
+        log("Terra-Deck: HP System Ready!");
+        log(&format!("Player: {} cards | Opponent: {} cards",
+                     game_state.player_hand.living_count(),
+                     game_state.opponent_hand.living_count()));
 
-        Ok(CanvasApplication { canvas, ctx, game_state })
+        Ok(CanvasApplication {
+            canvas, ctx, game_state, width, height,
+        })
     }
 
-    pub fn run(&mut self) {
+    pub fn run(&self) {
         self.render();
-        log("Ready!");
+        log("Click your cards to attack!");
     }
 
-    pub fn render(&mut self) {
-        let w = self.game_state.width as f64;
-        let h = self.game_state.height as f64;
+    pub fn render(&self) {
+        let w = self.width as f64;
+        let h = self.height as f64;
 
-        // Clear
-        self.ctx.clear_rect(0.0, 0.0, w, h);
-        draw_rect(&mut self.ctx, 0.0, 0.0, w, h, "#1a1a2e");
+        let ctx = &self.ctx;
+        ctx.clear_rect(0.0, 0.0, w, h);
+        draw_rect(ctx, 0.0, 0.0, w, h, "#1a1a2e", "none");
 
-        // Opponent hand (centered top)
-        self.game_state.opponent_hand.render(&mut self.ctx);
+        draw_text_centered(ctx, "Terra-Deck", w / 2.0, 20.0, "20px bold Arial", "#ffffff");
+        
+        self.draw_status_bar(ctx);
+        self.draw_hand(ctx, &self.game_state.opponent_hand, 80.0, false);
+        self.draw_hand(ctx, &self.game_state.player_hand, h - 200.0, true);
+        self.draw_combat_log(ctx);
+    }
 
-        // Player hand (centered bottom) with shake
-        for (i, card) in self.game_state.player_hand.cards.iter().enumerate() {
-            let shake = self.game_state.combat_effects.get_card_shake(i);
-            let draw_card = cards::Card {
-                suit: card.suit,
-                rank: card.rank,
-                x: card.x + shake,
-                y: card.y,
-                width: card.width,
-                height: card.height,
-                is_face_up: card.is_face_up,
-                is_selected: card.is_selected,
-            };
-            draw_card.render(&mut self.ctx);
+    fn draw_status_bar(&self, ctx: &CanvasRenderingContext2d) {
+        let w = self.width as f64;
+        draw_rect(ctx, 0.0, 35.0, w, 25.0, "#0f0f23", "none");
+        
+        let player_alive = self.game_state.player_hand.living_count();
+        let turn_str = if self.game_state.player_turn { "YOUR TURN" } else { "OPPonent TURN" };
+        let player_str = format!("Player: {} cards | {}", player_alive, turn_str);
+        let color = if self.game_state.player_turn { "#00ff00" } else { "#ff6600" };
+        draw_text(ctx, &player_str, 10.0, 52.0, "14px Arial", color);
+        
+        let opponent_str = format!("Opponent: {} cards", self.game_state.opponent_hand.living_count());
+        draw_text(ctx, &opponent_str, w - 150.0, 52.0, "14px Arial", "#ffffff");
+    }
+
+    fn draw_hand(&self, ctx: &CanvasRenderingContext2d, hand: &BridgeHand, y_base: f64, face_up: bool) {
+        let card_w = 80.0;
+        let card_h = 120.0;
+        let spacing = 10.0;
+        let count = hand.cards.len();
+        let total_w = (count as f64) * (card_w + spacing);
+        let start_x = (self.width as f64 - total_w) / 2.0;
+
+        for (i, card) in hand.cards.iter().enumerate() {
+            let x = start_x + (i as f64) * (card_w + spacing);
+            let is_selected = self.game_state.selected_card_index == Some(i);
+            
+            if is_selected && face_up {
+                draw_rect(ctx, x - 5.0, y_base - 5.0, card_w + 10.0, card_h + 10.0, "#ffff00", "none");
+            }
+            card.render(ctx, x, y_base, card_w, card_h, face_up);
         }
+    }
 
-        // Damage numbers
-        for damage in &self.game_state.combat_effects.damage_numbers {
-            self.game_state.combat_effects.render_damage(damage, &mut self.ctx);
+    fn draw_combat_log(&self, ctx: &CanvasRenderingContext2d) {
+        let x = 10.0;
+        let y = 100.0;
+        let w = 220.0;
+        let h = 180.0;
+        draw_rect(ctx, x, y, w, h, "#0f0f23", "#333333");
+        draw_text(ctx, "BATTLE LOG", x + 10.0, y + 20.0, "14px bold Arial", "#ffffff");
+        
+        let logs = &self.game_state.combat_log;
+        let start = if logs.len() > 8 { logs.len() - 8 } else { 0 };
+        for (i, entry) in logs.iter().enumerate() {
+            if i >= start {
+                let line_y = y + 35.0 + ((i - start) as f64) * 18.0;
+                draw_text(ctx, entry, x + 10.0, line_y, "12px Arial", "#cccccc");
+            }
         }
-
-        // Combat log
-        self.game_state.combat_effects.render_log(&mut self.ctx);
     }
-
-    pub fn update(&mut self, delta_time: f64) {
-        self.game_state.update(delta_time);
-    }
-
-    pub fn on_keydown(&self, e: &web_sys::KeyboardEvent) {
-        log(&format!("Key: {}", e.key()));
-    }
-
-    pub fn on_mousemove(&self, _e: &MouseEvent) {}
 
     pub fn on_mousedown(&mut self, e: &MouseEvent) {
         let mx = e.offset_x() as f64;
         let my = e.offset_y() as f64;
-        self.handle_attack(mx, my);
+        if self.handle_click(mx, my) {
+            self.render();
+        }
     }
 
+    pub fn on_keydown(&self, _e: &KeyboardEvent) {}
+    pub fn on_mousemove(&self, _e: &MouseEvent) {}
     pub fn on_mouseup(&mut self, _e: &MouseEvent) {}
-
-    pub fn get_particle_count(&self) -> usize { 0 }
-    pub fn get_canvas_width(&self) -> u32 { self.canvas.width() }
-    pub fn get_canvas_height(&self) -> u32 { self.canvas.height() }
 }
 
 impl CanvasApplication {
-    fn handle_attack(&mut self, mx: f64, my: f64) {
-        let threshold = self.game_state.height as f64 * 0.6;
-        
-        if my > threshold {
-            for (i, card) in self.game_state.player_hand.cards.iter().enumerate() {
-                if mx >= card.x && mx <= card.x + card.width as f64 &&
-                   my >= card.y && my <= card.y + card.height as f64 {
-                    
-                    let dmg = ((i % 8) + 2) as u8;
-                    let crit = i % 3 == 0;
-                    
-                    self.game_state.combat_effects.add_damage(
-                        card.x + card.width as f64 / 2.0,
-                        card.y - 30.0,
-                        dmg, crit,
-                    );
-                    self.game_state.combat_effects.add_shake(i, 5.0, 0.25);
-                    
-                    let msg = if crit {
-                        format!("CRITICAL! {} dmg", dmg)
-                    } else {
-                        format!("Card #{}: {} dmg", i + 1, dmg)
-                    };
-                    
-                    self.game_state.combat_effects.add_log_entry(
-                        &msg,
-                        if crit { "#ff6600" } else { "#ffffff" },
-                    );
-                    
-                    log(&msg);
-                    break;
+    fn handle_click(&mut self, mx: f64, my: f64) -> bool {
+        let y_base = self.height as f64 - 200.0;
+        let card_w = 80.0;
+        let card_h = 120.0;
+        let spacing = 10.0;
+        let count = self.game_state.player_hand.cards.len();
+        let total_w = (count as f64) * (card_w + spacing);
+        let start_x = (self.width as f64 - total_w) / 2.0;
+
+        let rel_y = my - y_base;
+        if rel_y < 0.0 || rel_y > card_h {
+            return false;
+        }
+
+        for (i, card) in self.game_state.player_hand.cards.iter().enumerate() {
+            let card_x = start_x + (i as f64) * (card_w + spacing);
+            if mx >= card_x && mx <= card_x + card_w && !card.is_dead() {
+                if self.game_state.selected_card_index == Some(i) {
+                    self.game_state.selected_card_index = None;
+                    log("Card deselected");
+                    return true;
+                } else if self.game_state.selected_card_index.is_some() {
+                    self.attack();
+                    return true;
+                } else {
+                    self.game_state.selected_card_index = Some(i);
+                    log(&format!("Card {} selected - click another to attack!", i + 1));
+                    return true;
+                }
+            }
+        }
+        false
+    }
+
+    fn attack(&mut self) {
+        if let Some(attacker_idx) = self.game_state.selected_card_index {
+            let _ = attacker_idx;
+            
+            if let Some(victory) = self.game_state.player_attack() {
+                if victory {
+                    log("VICTORY! All enemies destroyed!");
+                }
+                return;
+            }
+
+            if let Some(defeat) = self.game_state.opponent_attack() {
+                if defeat {
+                    log("DEFEAT! All your cards destroyed!");
                 }
             }
         }

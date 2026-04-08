@@ -10,7 +10,7 @@ edition = "2021"
 version = "0.1.0"
 
 [workspace.dependencies]
-bevy = { version = "0.18.1", default-features = false, features = ["bevy_ecs", "bevy_math"] }
+bevy = { version = "0.18.1", default-features = false }
 ratatui = "0.28"
 crossterm = "0.28"
 rand = "0.10"

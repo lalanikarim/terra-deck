@@ -11,11 +11,8 @@ categories = ["games", "game-development"]
 readme = "../../README.md"
 
 [dependencies]
-bevy = { workspace = true, optional = true }
+bevy = "0.18.1"
 rand.workspace = true
-
-[dev-dependencies]
 
 [features]
 default = []
-bevy_ecs = ["bevy"]
