@@ -1,8 +1,21 @@
 [package]
 name = "game_core"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Core game logic for Terra-Deck - a turn-based Poker Card RPG with HP system and combat mechanics"
+keywords = ["game", "rpg", "cards", "terminal"]
+categories = ["games", "game-development"]
+readme = "../../README.md"
 
 [dependencies]
-bevy = "0.18.1"
-rand = "0.10.0"
+bevy = { workspace = true, optional = true }
+rand.workspace = true
+
+[dev-dependencies]
+
+[features]
+default = []
+bevy_ecs = ["bevy"]

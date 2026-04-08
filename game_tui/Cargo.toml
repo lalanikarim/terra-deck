@@ -1,13 +1,17 @@
 [package]
 name = "game_tui"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Terminal UI renderer for Terra-Deck using ratatui"
+keywords = ["tui", "terminal", "gamedevelopment"]
+categories = ["games"]
 
 [dependencies]
 bevy = "0.18.1"
 game_core = { path = "../game_core" }
-
-# TUI dependencies
 ratatui = "0.29"
 crossterm = "0.28"
 rand = "0.10"
