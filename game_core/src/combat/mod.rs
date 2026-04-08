@@ -2,7 +2,8 @@
 
 use crate::types::{Archetype, Suit};
 use crate::Card;
-use rand::RngExt;
+use rand::Rng;
+use rand::SeedableRng;
 
 /// Enum representing the result of a combat interaction
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -55,8 +56,8 @@ pub fn apply_combat_damage(attacker: &Card, defender: &mut Card) -> (u8, CombatR
     let modified_damage = (base_damage as f32 * multiplier) as u8;
 
     // Determine if special effect occurs
-    let mut rng = rand::rng();
-    let special_occurs = rng.random::<f32>() < special_chance;
+    let mut rng = rand::rngs::StdRng::from_seed([0; 32]);
+    let special_occurs = rng.gen_range(0.0..1.0) < special_chance;
 
     let (final_damage, result) = if special_occurs {
         match (attacker.suit.archetype(), defender.suit.archetype()) {
@@ -65,7 +66,7 @@ pub fn apply_combat_damage(attacker: &Card, defender: &mut Card) -> (u8, CombatR
             | (Archetype::Scissors, Archetype::Paper)
             | (Archetype::Paper, Archetype::Rock) => {
                 // 50% chance to absorb (0x) vs normal reduced damage
-                if rng.random_bool(0.5) {
+                if rng.gen_range(0.0..1.0) < 0.5 {
                     (0, CombatResult::Absorb)
                 } else {
                     (modified_damage, CombatResult::Normal)
@@ -81,7 +82,7 @@ pub fn apply_combat_damage(attacker: &Card, defender: &mut Card) -> (u8, CombatR
             // Infantry special - 0.25x absorb or 2x crit
             (_, Archetype::Infantry) | (Archetype::Infantry, _) => {
                 // 50/50 split between absorb and crit for infantry
-                if rng.random_bool(0.5) {
+                if rng.gen_range(0.0..1.0) < 0.5 {
                     (0, CombatResult::Absorb)
                 } else {
                     (modified_damage * 2, CombatResult::CriticalHit)

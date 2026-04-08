@@ -1,6 +1,7 @@
 //! Simple AI opponent logic
 
-use rand::prelude::*;
+use rand::Rng;
+use rand::SeedableRng;
 
 /// Selects a card index for the opponent to play
 /// Currently uses simple random selection
@@ -9,7 +10,9 @@ pub fn select_opponent_card(hand_size: usize) -> Option<usize> {
         return None;
     }
     
-    Some(rand::rng().random_range(0..hand_size))
+    // Use StdRng with fixed seed for determinism in WASM
+    let mut rng = rand::rngs::StdRng::from_seed([0; 32]);
+    Some(rng.gen_range(0..hand_size))
 }
 
 /// Updates the selected card state for opponent turn

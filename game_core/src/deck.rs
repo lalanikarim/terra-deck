@@ -47,7 +47,7 @@ impl Deck {
         let mut len = self.cards.len();
         while len > 1 {
             len -= 1;
-            let swap_idx = rng.random_range(0..len);
+            let swap_idx = rng.gen_range(0..len);
             self.cards.swap(len, swap_idx);
         }
     }
