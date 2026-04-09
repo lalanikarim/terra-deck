@@ -4,7 +4,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
-                title: "Bevy 2D - Card Sprite Demo".to_string(),
+                title: "Bevy 2D - Debug Mode".to_string(),
                 ..default()
             }),
             ..default()
@@ -14,30 +14,41 @@ fn main() {
 }
 
 fn setup(
-    asset_server: Res<AssetServer>,
     mut commands: Commands,
-    mut cameras: Query<&mut Transform, With<Camera2d>>,
+    mut asset_server: Res<AssetServer>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    cameras: Query<Entity, With<Camera2d>>,
 ) {
-    // Position the 2D camera at Z=10 (in front) to view sprites at Z=0
-    for mut camera_transform in cameras.iter_mut() {
-        camera_transform.translation.x = 0.0;
-        camera_transform.translation.y = 0.0;
-        camera_transform.translation.z = 10.0;
+    // Kill default 3D camera
+    for camera in cameras.iter() {
+        commands.entity(camera).despawn();
     }
 
-    // Load card sprite from local assets folder (using large size for visibility)
+    // Spawn a 2D camera
+    commands.spawn((Camera2d::default(), Transform::from_xyz(0.0, 0.0, 10.0)));
+
+    // Spawn a bright neon green rectangle (definitely visible)
+    commands.spawn((
+        Mesh2d(meshes.add(Rectangle::new(200.0, 100.0))),
+        MeshMaterial2d(materials.add(Color::srgb(0.0, 1.0, 0.0))), // Neon green
+        Transform::from_xyz(-250.0, 0.0, 0.0),
+    ));
+
+    // Load sprite from assets
     let image_handle =
         asset_server.load("kenney_playing-cards-pack/PNG/Cards (large)/card_back.png");
 
-    // Spawn sprite with custom size (larger for large sprites)
+    // Spawn sprite to the right with different size
     commands.spawn((
         Sprite {
             image: image_handle,
-            custom_size: Some(Vec2::new(500.0, 750.0)),
+            custom_size: Some(Vec2::new(1000.0, 1500.0)),
+            color: Color::srgb(1.0, 1.0, 1.0),
             ..default()
         },
-        Transform::default(),
+        Transform::from_xyz(250.0, 0.0, 0.0),
     ));
 
-    println!("✅ Sprite loaded successfully!");
+    println!("Spawned: green rectangle (left) + sprite (right)");
 }
