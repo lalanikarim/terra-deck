@@ -40,14 +40,14 @@ pub fn render_opponent_hand(
         };
         let x = start_x + total_width * t;
 
-        // Opponent cards at top of screen. Card is 150 tall (centered at +0.75)
+        // Opponent cards at top of screen, 100 units up from center
         commands.spawn((
             Sprite {
                 image: (*card_back).clone(),
                 custom_size: Some(Vec2::new(100.0, 150.0)),
                 ..default()
             },
-            Transform::from_xyz(x, 0.75, 1.0),
+            Transform::from_xyz(x, 100.0, 1.0),
             OpponentCard {},
         ));
     }
