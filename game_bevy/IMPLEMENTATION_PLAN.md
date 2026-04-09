@@ -70,7 +70,7 @@ We will use **Bevy Events** to trigger visual-only animations:
 
 ### 🃏 Phase 2: Visual Identity (The "Card" Era)
 *Goal: Replace primitives with the actual Kenney card assets.*
-- [ ] **Task 2.1: Sprite Mapping**: Implement the `Rank/Suit` $\rightarrow$ `TextureHandle` lookup.
+- [x] **Task 2.1: Sprite Mapping**: Implemented (Suit, Rank) to texture mapping Implement the `Rank/Suit` $\rightarrow$ `TextureHandle` lookup.
 - [x] **Task 2.2: Hand Layout**: Fan layout - cards spread horizontally across screen
 - [ ] **Task 2.3: The Fog of War**: Implement the texture swap logic (Back to Front) for opponent cards.
 - [ ] **Task 2.4: UI Overlay**: Implement the `CombatLog` using Bevy `TextBundle`.
