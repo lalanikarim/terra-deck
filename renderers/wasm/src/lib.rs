@@ -247,6 +247,7 @@ impl CanvasApplication {
     pub fn on_mousedown(&self, e: &MouseEvent) {
         let mx = e.offset_x() as f64;
         let my = e.offset_y() as f64;
+        log(&format!("Mouse click: x={:.0}, y={:.0}", mx, my));
         self.handle_click(mx, my);
     }
 
