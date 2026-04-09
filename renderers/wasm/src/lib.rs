@@ -253,7 +253,7 @@ impl CanvasApplication {
 
     pub fn on_keydown(&self, _e: &KeyboardEvent) {}
     pub fn on_mousemove(&self, _e: &MouseEvent) {}
-    pub fn on_mouseup(&mut self, _e: &MouseEvent) {}
+    pub fn on_mouseup(&self, _e: &MouseEvent) {}
 
     fn handle_click(&self, mx: f64, my: f64) {
         let opponent_y = 50.0;
@@ -263,47 +263,64 @@ impl CanvasApplication {
         let spacing = 10.0;
 
         // Check opponent cards (target selection)
-        {
-            let hand = &self.game_state.borrow().opponent_hand;
+        let target_index = {
+            let state = self.game_state.borrow();
+            let hand = &state.opponent_hand;
             let count = hand.cards.len();
             let total_w = (count as f64) * (card_w + spacing);
             let start_x = (self.width as f64 - total_w) / 2.0;
 
-            for (i, card) in hand.cards.iter().enumerate() {
-                if card.is_dead() {
-                    continue;
-                }
-                let x = start_x + (i as f64) * (card_w + spacing);
-                if mx >= x && mx <= x + card_w && my >= opponent_y && my <= opponent_y + card_h {
-                    let state = &mut *self.game_state.borrow_mut();
-                    state.select_target_card(i);
-                    self.render();
-                    self.update_attack_button();
-                    return;
-                }
-            }
+            hand.cards
+                .iter()
+                .enumerate()
+                .find(|(i, card)| {
+                    if card.is_dead() {
+                        return false;
+                    }
+                    let x = start_x + (*i as f64) * (card_w + spacing);
+                    mx >= x && mx <= x + card_w && my >= opponent_y && my <= opponent_y + card_h
+                })
+                .map(|(i, _)| i)
+        };
+
+        if let Some(idx) = target_index {
+            let mut state = self.game_state.borrow_mut();
+            state.select_target_card(idx);
+            // Borrow automatically drops here
+
+            self.render();
+            self.update_attack_button();
+            return;
         }
 
         // Check player cards (source selection)
-        {
-            let hand = &self.game_state.borrow().player_hand;
+        let player_index = {
+            let state = self.game_state.borrow();
+            let hand = &state.player_hand;
             let count = hand.cards.len();
             let total_w = (count as f64) * (card_w + spacing);
             let start_x = (self.width as f64 - total_w) / 2.0;
 
-            for (i, card) in hand.cards.iter().enumerate() {
-                if card.is_dead() {
-                    continue;
-                }
-                let x = start_x + (i as f64) * (card_w + spacing);
-                if mx >= x && mx <= x + card_w && my >= player_y && my <= player_y + card_h {
-                    let state = &mut *self.game_state.borrow_mut();
-                    state.select_player_card(i);
-                    self.render();
-                    self.update_attack_button();
-                    return;
-                }
-            }
+            hand.cards
+                .iter()
+                .enumerate()
+                .find(|(i, card)| {
+                    if card.is_dead() {
+                        return false;
+                    }
+                    let x = start_x + (*i as f64) * (card_w + spacing);
+                    mx >= x && mx <= x + card_w && my >= player_y && my <= player_y + card_h
+                })
+                .map(|(i, _)| i)
+        };
+
+        if let Some(idx) = player_index {
+            let mut state = self.game_state.borrow_mut();
+            state.select_player_card(idx);
+            // Borrow automatically drops here
+
+            self.render();
+            self.update_attack_button();
         }
     }
 }
