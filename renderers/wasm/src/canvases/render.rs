@@ -1,7 +1,6 @@
 //! Canvas rendering utilities for Terra-Deck
 
 use web_sys::CanvasRenderingContext2d;
-use wasm_bindgen::JsValue;
 
 /// Draw a rectangle with fill and/or stroke
 pub fn draw_rect(
@@ -14,11 +13,11 @@ pub fn draw_rect(
     stroke_color: &str,
 ) {
     if fill_color != "none" {
-        ctx.set_fill_style(&JsValue::from_str(fill_color));
+        ctx.set_fill_style_str(fill_color);
         ctx.fill_rect(x, y, width, height);
     }
     if stroke_color != "none" {
-        ctx.set_stroke_style(&JsValue::from_str(stroke_color));
+        ctx.set_stroke_style_str(stroke_color);
         ctx.stroke_rect(x, y, width, height);
     }
 }
@@ -33,7 +32,7 @@ pub fn draw_text(
     color: &str,
 ) {
     ctx.set_font(font_style);
-    ctx.set_fill_style(&JsValue::from_str(color));
+    ctx.set_fill_style_str(color);
     let _ = ctx.fill_text(text, x, y);
 }
 
@@ -48,7 +47,7 @@ pub fn draw_text_centered(
 ) {
     ctx.set_font(font_style);
     ctx.set_text_align("center");
-    ctx.set_fill_style(&JsValue::from_str(color));
+    ctx.set_fill_style_str(color);
     let _ = ctx.fill_text(text, x, y);
     ctx.set_text_align("start");
 }
