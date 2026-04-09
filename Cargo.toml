@@ -1,5 +1,5 @@
 [workspace]
-members = ["game_core", "game_tui", "renderers/wasm"]
+members = ["game_core", "game_tui"]
 resolver = "2"
 
 [workspace.package]
@@ -14,6 +14,3 @@ bevy = { version = "0.18.1", default-features = false }
 ratatui = "0.28"
 crossterm = "0.28"
 rand = "0.10"
-wasm-bindgen = "0.2.117"
-web-sys = "0.3.94"
-js-sys = "0.3.94"
