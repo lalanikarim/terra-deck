@@ -71,15 +71,15 @@ fn render_hand(
             suit, rank
         ));
 
-        // Use the calculated position for fan layout, at the bottom of screen
+        // Player cards at bottom of screen. Card is 150 tall (centered at -0.5)
         let x = start_x + t * total_width;
         commands.spawn((
-            bevy::prelude::Sprite {
+            Sprite {
                 image: texture,
-                custom_size: Some(bevy::prelude::Vec2::new(100.0, 150.0)),
+                custom_size: Some(Vec2::new(100.0, 150.0)),
                 ..default()
             },
-            bevy::prelude::Transform::from_xyz(x, -25.0 * 1.5, 1.0), // Player cards at Y=-37.5 (bottom)
+            Transform::from_xyz(x, -0.75, 1.0),
         ));
     }
 }
