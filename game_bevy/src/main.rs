@@ -25,15 +25,15 @@ fn setup(
         camera_transform.translation.z = 10.0;
     }
 
-    // Load card sprite from local assets folder
+    // Load card sprite from local assets folder (using large size for visibility)
     let image_handle =
-        asset_server.load("kenney_playing-cards-pack/PNG/Cards (medium)/card_back.png");
+        asset_server.load("kenney_playing-cards-pack/PNG/Cards (large)/card_back.png");
 
-    // Spawn sprite with custom size
+    // Spawn sprite with custom size (larger for large sprites)
     commands.spawn((
         Sprite {
             image: image_handle,
-            custom_size: Some(Vec2::new(300.0, 450.0)),
+            custom_size: Some(Vec2::new(500.0, 750.0)),
             ..default()
         },
         Transform::default(),
