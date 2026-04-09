@@ -25,7 +25,7 @@ fn setup(
         camera_transform.translation.z = 10.0;
     }
 
-    // Load card sprite from project assets folder
+    // Load card sprite from local assets folder
     let image_handle =
         asset_server.load("kenney_playing-cards-pack/PNG/Cards (medium)/card_back.png");
 
