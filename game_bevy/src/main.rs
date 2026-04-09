@@ -29,12 +29,12 @@ fn setup(
     // Load sprite - 64x64 but should be 2:3 ratio (64x96)
     let card_back = asset_server.load("kenney_playing-cards-pack/PNG/Cards (large)/card_back.png");
 
-    // Spawn sprite with proper card aspect ratio
+    // Spawn sprite with proper card aspect ratio (smaller for visibility)
     commands.spawn((
         Sprite {
             image: card_back,
-            // Card ratio is typically 2:3 or 1:1.5
-            custom_size: Some(Vec2::new(600.0, 900.0)),
+            // Smaller size - card ratio 2:3, scaled down from 600×900 to 300×450
+            custom_size: Some(Vec2::new(300.0, 450.0)),
             color: Color::srgb(1.0, 1.0, 1.0),
             ..default()
         },
