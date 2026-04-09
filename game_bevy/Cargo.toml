@@ -5,3 +5,7 @@ edition = "2021"
 
 [dependencies]
 bevy = "0.18"
+
+[[bin]]
+name = "game_bevy"
+path = "src/main.rs"
