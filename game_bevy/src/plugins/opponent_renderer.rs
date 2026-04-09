@@ -44,10 +44,10 @@ pub fn render_opponent_hand(
         commands.spawn((
             bevy::prelude::Sprite {
                 image: (*card_back).clone(),
-                custom_size: Some(bevy::prelude::Vec2::new(100.0, 150.0)),
+                custom_size: Some(bevy::prelude::Vec2::new(80.0, 120.0)),
                 ..default()
             },
-            bevy::prelude::Transform::from_xyz(x, 25.0, 1.0),
+            bevy::prelude::Transform::from_xyz(x, 25.0 * 1.5, 1.0),
             OpponentCard {},
         ));
     }

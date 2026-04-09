@@ -74,12 +74,12 @@ fn render_hand(
         // Use the calculated position for fan layout, at the bottom of screen
         let x = start_x + t * total_width;
         commands.spawn((
-            Sprite {
+            bevy::prelude::Sprite {
                 image: texture,
-                custom_size: Some(Vec2::new(100.0, 150.0)),
+                custom_size: Some(bevy::prelude::Vec2::new(100.0, 150.0)),
                 ..default()
             },
-            Transform::from_xyz(x, -25.0, 1.0), // Player cards at bottom (Y=-25)
+            bevy::prelude::Transform::from_xyz(x, -25.0 * 1.5, 1.0), // Player cards at Y=-37.5 (bottom)
         ));
     }
 }
