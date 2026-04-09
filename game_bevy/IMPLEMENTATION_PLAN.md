@@ -65,7 +65,7 @@ We will use **Bevy Events** to trigger visual-only animations:
 *Goal: Get a Bevy window running that mirrors the TUI state.*
 - [x] **Task 1.1: Workspace Setup**: Create `game_bevy` crate and add to `Cargo.toml` workspace.
 - [x] **Task 1.2: Asset Pipeline**: Implement `CardAssetLoader` to pre-cache all Kenney card sprites. (Verified: Displayed 7H,_AS, KD, 2C)
-- [ ] **Task 1.3: The Bridge Resource**: Implement `GameSessionResource` and the basic `InputMappingSystem`.
+- [x] **Task 1.3: The Bridge Resource**: Implemented `GameSessionResource`, GameSessionPlugin, basic state queries.
 - [ ] **Task 1.4: Primitive Rendering**: Render player cards as simple colored squares (to verify indexing/input works).
 
 ### 🃏 Phase 2: Visual Identity (The "Card" Era)
