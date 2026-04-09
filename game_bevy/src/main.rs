@@ -1,5 +1,8 @@
 use bevy::prelude::*;
-use game_bevy::plugins::{CardAssetPlugin, GameSessionPlugin, GameSessionResource};
+use game_bevy::plugins::{
+    render_opponent_hand, CardAssetPlugin, GameSessionPlugin, GameSessionResource,
+    OpponentRendererPlugin,
+};
 
 fn main() {
     App::new()
@@ -12,7 +15,9 @@ fn main() {
         }))
         .add_plugins(CardAssetPlugin)
         .add_plugins(GameSessionPlugin)
-        .add_systems(Startup, (initialize, render_hand))
+        .add_plugins(OpponentRendererPlugin)
+        .add_systems(Startup, initialize)
+        .add_systems(Update, (render_hand, render_opponent_hand))
         .run();
 }
 
@@ -66,7 +71,7 @@ fn render_hand(
             suit, rank
         ));
 
-        // Use the calculated position for fan layout
+        // Use the calculated position for fan layout, at the bottom of screen
         let x = start_x + t * total_width;
         commands.spawn((
             Sprite {
@@ -74,7 +79,7 @@ fn render_hand(
                 custom_size: Some(Vec2::new(100.0, 150.0)),
                 ..default()
             },
-            Transform::from_xyz(x, 0.0, 1.0), // Spawn at Z=1 so camera can see it
+            Transform::from_xyz(x, -25.0, 1.0), // Player cards at bottom (Y=-25)
         ));
     }
 }
