@@ -16,26 +16,28 @@ fn main() {
 fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    cameras: Query<Entity, With<Camera2d>>,
+    mut cameras: Query<&mut Transform, With<Camera2d>>,
 ) {
-    // Kill default 3D camera and spawn a 2D camera instead
-    for camera in cameras.iter() {
-        commands.entity(camera).despawn();
+    // Position the 2D camera at Z=10 (in front) to view sprites at Z=0
+    for mut camera_transform in cameras.iter_mut() {
+        camera_transform.translation.x = 0.0;
+        camera_transform.translation.y = 0.0;
+        camera_transform.translation.z = 10.0; // Z=10 to look at Z=0 sprites
     }
 
-    // Spawn a 2D camera
-    commands.spawn(Camera2d::default());
-
-    // Try Sprite approach with load() - returns Image handle
+    // Load the card sprite
     let card_back: Handle<Image> =
         asset_server.load("kenney_playing-cards-pack/PNG/Cards (medium)/card_back.png");
 
-    // Spawn using Sprite with the loaded image
-    commands.spawn(Sprite {
-        image: card_back,
-        custom_size: Some(Vec2::new(1.0, 1.5)),
-        ..default()
-    });
+    // Spawn sprite with custom size - set image and custom_size
+    commands.spawn((
+        Sprite {
+            image: card_back,
+            custom_size: Some(Vec2::new(300.0, 450.0)),
+            ..default()
+        },
+        Transform::default(),
+    ));
 
     println!("Sprite loaded successfully!");
 }
