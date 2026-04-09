@@ -71,7 +71,7 @@ fn render_hand(
             suit, rank
         ));
 
-        // Player cards at bottom of screen, 100 units down from center
+        // Player cards at bottom of screen, 150 units down from center
         let x = start_x + t * total_width;
         commands.spawn((
             Sprite {
@@ -79,7 +79,7 @@ fn render_hand(
                 custom_size: Some(Vec2::new(100.0, 150.0)),
                 ..default()
             },
-            Transform::from_xyz(x, -100.0, 1.0),
+            Transform::from_xyz(x, -150.0, 1.0),
         ));
     }
 }
