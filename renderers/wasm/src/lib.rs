@@ -110,6 +110,10 @@ impl CanvasApplication {
         }
     }
 
+    pub fn update(&self, _delta_time: f64) {
+        // No-op - game is event-driven
+    }
+
     fn draw_background(&self, ctx: &CanvasRenderingContext2d) {
         ctx.set_fill_style_str("#1a1a2e");
         ctx.fill_rect(0.0, 0.0, self.width as f64, self.height as f64);
