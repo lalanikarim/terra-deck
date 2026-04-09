@@ -25,9 +25,9 @@ fn setup(
         camera_transform.translation.z = 10.0; // Z=10 to look at Z=0 sprites
     }
 
-    // Load the card sprite
+    // Load the card sprite from project assets folder
     let card_back: Handle<Image> =
-        asset_server.load("kenney_playing-cards-pack/PNG/Cards (medium)/card_back.png");
+        asset_server.load("../assets/kenney_playing-cards-pack/PNG/Cards (medium)/card_back.png");
 
     // Spawn sprite with custom size - set image and custom_size
     commands.spawn((
