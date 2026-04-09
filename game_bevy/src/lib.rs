@@ -1,7 +1,7 @@
-//! Terra-Deck Bevy 2D Renderer
-//!
-//! This crate provides a graphical rendering layer for Terra-Deck's `game_core`.
-//! The game logic remains in `game_core`, while `game_bevy` handles 2D rendering.
-
 pub mod plugins;
-pub use plugins::bridge::GameSessionResource;
+
+pub use plugins::card_renderer::{render_player_hand, PlayerRendererPlugin};
+pub use plugins::opponent_renderer::{
+    render_opponent_hand, GameTarget, OpponentCard, OpponentRendererPlugin,
+};
+pub use plugins::{CardAssetPlugin, GameSessionPlugin, GameSessionResource};
