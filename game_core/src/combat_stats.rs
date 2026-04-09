@@ -71,7 +71,7 @@ mod tests {
         let won = GameResult::Won;
         let lost = GameResult::Lost;
         let draw = GameResult::Draw;
-        
+
         assert_ne!(won, lost);
         assert_ne!(won, draw);
         assert_ne!(lost, draw);

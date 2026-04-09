@@ -176,13 +176,19 @@ mod tests {
             GameStateLoop::WaitingForOpponent,
         ];
         for state in states {
-            assert_eq!(state.reset_to_player_turn(), GameStateLoop::SelectPlayerCard);
+            assert_eq!(
+                state.reset_to_player_turn(),
+                GameStateLoop::SelectPlayerCard
+            );
         }
     }
 
     #[test]
     fn test_display() {
-        assert_eq!(format!("{}", GameStateLoop::SelectPlayerCard), "Select Your Card");
+        assert_eq!(
+            format!("{}", GameStateLoop::SelectPlayerCard),
+            "Select Your Card"
+        );
         assert_eq!(format!("{}", GameStateLoop::GameOver), "Game Over");
     }
 }

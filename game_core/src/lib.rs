@@ -21,6 +21,7 @@ pub use combat::{apply_combat_damage, calculate_damage_multiplier, CombatResult}
 pub use combat_log::CombatLog;
 pub use combat_stats::{CombatStats, GameResult, GameState};
 pub use deck::Deck;
+pub use game_session::GameSession;
 pub use hand::Hand;
 pub use turn_state::SelectedCard;
 pub use types::{Archetype, Rank, Suit};

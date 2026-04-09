@@ -3,7 +3,7 @@
 
 use crate::combat::{apply_combat_damage, CombatResult};
 use crate::game_loop::GameStateLoop;
-use crate::{Card, Deck, Hand, CombatLog, GameResult, SelectedCard};
+use crate::{Card, CombatLog, Deck, GameResult, Hand, SelectedCard};
 use rand::SeedableRng;
 
 /// Result information after combat resolution
@@ -112,30 +112,65 @@ impl GameSession {
         let opponent_card = self.opponent_hand.cards[opponent_idx].clone();
         let mut player_card_copy = player_card.clone();
         let mut opponent_card_copy = opponent_card.clone();
-        let (player_dmg, player_result) = apply_combat_damage(&player_card, &mut opponent_card_copy);
-        let (opponent_dmg, opponent_result) = apply_combat_damage(&opponent_card, &mut player_card_copy);
+        let (player_dmg, player_result) =
+            apply_combat_damage(&player_card, &mut opponent_card_copy);
+        let (opponent_dmg, opponent_result) =
+            apply_combat_damage(&opponent_card, &mut player_card_copy);
         let player_crit = matches!(player_result, CombatResult::CriticalHit);
         let opponent_crit = matches!(opponent_result, CombatResult::CriticalHit);
         self.player_hand.cards[player_idx] = player_card_copy.clone();
         self.opponent_hand.cards[opponent_idx] = opponent_card_copy.clone();
-        let archetype_str = self.get_combat_log_entry(&player_card, &opponent_card, player_dmg, opponent_dmg, player_crit, opponent_crit);
+        let archetype_str = self.get_combat_log_entry(
+            &player_card,
+            &opponent_card,
+            player_dmg,
+            opponent_dmg,
+            player_crit,
+            opponent_crit,
+        );
         self.combat_log.add_entry(archetype_str);
         let player_dead = self.player_hand.remove_dead_cards();
         let opponent_dead = self.opponent_hand.remove_dead_cards();
-        if player_dead > 0 { self.combat_log.add_entry(format!("Your card #{} died!", player_idx + 1)); }
-        if opponent_dead > 0 { self.combat_log.add_entry(format!("Opponent's card #{} was destroyed!", opponent_idx + 1)); }
+        if player_dead > 0 {
+            self.combat_log
+                .add_entry(format!("Your card #{} died!", player_idx + 1));
+        }
+        if opponent_dead > 0 {
+            self.combat_log.add_entry(format!(
+                "Opponent's card #{} was destroyed!",
+                opponent_idx + 1
+            ));
+        }
         self.selected_player_card.on_cards_removed(player_dead);
         self.selected_opponent_card.on_cards_removed(opponent_dead);
-        let result = CombatResultInfo { player_dmg, opponent_dmg, player_crit, opponent_crit, player_dead, opponent_dead };
+        let result = CombatResultInfo {
+            player_dmg,
+            opponent_dmg,
+            player_crit,
+            opponent_crit,
+            player_dead,
+            opponent_dead,
+        };
         self.check_game_over();
         result
     }
 
-    fn get_combat_log_entry(&self, player_card: &Card, opponent_card: &Card, player_dmg: u8, _opponent_dmg: u8, player_crit: bool, _opponent_crit: bool) -> String {
+    fn get_combat_log_entry(
+        &self,
+        player_card: &Card,
+        opponent_card: &Card,
+        player_dmg: u8,
+        _opponent_dmg: u8,
+        player_crit: bool,
+        _opponent_crit: bool,
+    ) -> String {
         let crit_prefix = if player_crit { "CRITICAL! " } else { "" };
         let player_arch = player_card.suit.archetype();
         let opponent_arch = opponent_card.suit.archetype();
-        format!("{}{} (vs {}) dealt {} damage", crit_prefix, player_arch, opponent_arch, player_dmg)
+        format!(
+            "{}{} (vs {}) dealt {} damage",
+            crit_prefix, player_arch, opponent_arch, player_dmg
+        )
     }
 
     pub fn resolve_opponent_attack(&mut self, opponent_idx: usize, player_idx: usize) {
@@ -143,25 +178,36 @@ impl GameSession {
         self.check_game_over();
     }
 
-    pub fn is_player_turn(&self) -> bool { self.loop_state.is_player_turn() }
-    pub fn is_opponent_turn(&self) -> bool { self.loop_state.is_opponent_turn() }
-    pub fn is_resolving(&self) -> bool { self.loop_state.is_resolving() }
-    pub fn is_game_over(&self) -> bool { self.loop_state.is_game_over() }
+    pub fn is_player_turn(&self) -> bool {
+        self.loop_state.is_player_turn()
+    }
+    pub fn is_opponent_turn(&self) -> bool {
+        self.loop_state.is_opponent_turn()
+    }
+    pub fn is_resolving(&self) -> bool {
+        self.loop_state.is_resolving()
+    }
+    pub fn is_game_over(&self) -> bool {
+        self.loop_state.is_game_over()
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test] fn test_new_game_session() {
+    #[test]
+    fn test_new_game_session() {
         let session = GameSession::new();
         assert_eq!(session.loop_state, GameStateLoop::Start);
     }
-    #[test] fn test_start_new_game() {
+    #[test]
+    fn test_start_new_game() {
         let mut session = GameSession::new();
         session.start_new_game();
         assert_eq!(session.deck.len(), 42);
     }
-    #[test] fn test_combat_resolution() {
+    #[test]
+    fn test_combat_resolution() {
         let mut session = GameSession::new();
         session.start_new_game();
         let result = session.resolve_player_attack(0, 0);

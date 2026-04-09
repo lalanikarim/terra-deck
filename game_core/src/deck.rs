@@ -77,8 +77,8 @@ impl Default for Deck {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rand::SeedableRng;
     use rand::rngs::SmallRng;
+    use rand::SeedableRng;
 
     #[test]
     fn test_deck_generation() {
@@ -217,11 +217,11 @@ mod tests {
         let mut deck = Deck::new();
         let mut rng = SmallRng::seed_from_u64(42);
         let original = deck.cards.clone();
-        
+
         // Shuffle and verify still 52 cards
         deck.shuffle(&mut rng);
         assert_eq!(deck.len(), 52);
-        
+
         // Verify order changed (with this seed, it will change)
         assert_ne!(original, deck.cards);
     }
@@ -231,15 +231,18 @@ mod tests {
         let mut deck = Deck::new();
         let mut rng = SmallRng::seed_from_u64(42);
         let original = deck.cards.clone();
-        
+
         deck.shuffle(&mut rng);
-        
+
         assert_eq!(deck.len(), original.len());
-        
+
         // All suits and ranks should still be present
         for suit in [Suit::Hearts, Suit::Diamonds, Suit::Clubs, Suit::Spades].iter() {
             for rank in [Rank::Two, Rank::Ten, Rank::Ace].iter() {
-                assert!(deck.cards.iter().any(|c| c.suit == *suit && c.rank == *rank));
+                assert!(deck
+                    .cards
+                    .iter()
+                    .any(|c| c.suit == *suit && c.rank == *rank));
             }
         }
     }

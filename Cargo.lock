@@ -2636,6 +2636,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "game_bevy"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+]
+
+[[package]]
 name = "game_core"
 version = "0.1.0"
 dependencies = [

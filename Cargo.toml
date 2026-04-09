@@ -1,5 +1,5 @@
 [workspace]
-members = ["game_core", "game_tui"]
+members = ["game_core", "game_tui", "game_bevy"]
 resolver = "2"
 
 [workspace.package]
@@ -10,7 +10,7 @@ edition = "2021"
 version = "0.1.0"
 
 [workspace.dependencies]
-bevy = { version = "0.18.1", default-features = false }
+bevy = { version = "0.18.1", default-features = false, features = ["unapproved_paths"] }
 ratatui = "0.28"
 crossterm = "0.28"
 rand = "0.10"
