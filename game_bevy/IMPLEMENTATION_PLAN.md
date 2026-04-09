@@ -66,7 +66,7 @@ We will use **Bevy Events** to trigger visual-only animations:
 - [x] **Task 1.1: Workspace Setup**: Create `game_bevy` crate and add to `Cargo.toml` workspace.
 - [x] **Task 1.2: Asset Pipeline**: Implement `CardAssetLoader` to pre-cache all Kenney card sprites. (Verified: Displayed 7H,_AS, KD, 2C)
 - [x] **Task 1.3: The Bridge Resource**: Implemented `GameSessionResource`, GameSessionPlugin, basic state queries.
-- [ ] **Task 1.4: Primitive Rendering**: Render player cards as simple colored squares (to verify indexing/input works).
+- [x] **Task 1.4: Primitive Rendering** - connected to game_core Render player cards as simple colored squares (to verify indexing/input works).
 
 ### 🃏 Phase 2: Visual Identity (The "Card" Era)
 *Goal: Replace primitives with the actual Kenney card assets.*
