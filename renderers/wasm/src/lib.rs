@@ -70,12 +70,19 @@ impl CanvasApplication {
 
         self.draw_background(&self.ctx);
         self.draw_ui(&self.ctx, width, height, &game_state);
-        self.draw_opponent_hand(&self.ctx, &game_state.opponent_hand, 50.0, width);
+        self.draw_opponent_hand(
+            &self.ctx,
+            &game_state.opponent_hand,
+            50.0,
+            width,
+            game_state.target_card_index,
+        );
         self.draw_player_hand(
             &self.ctx,
             &game_state.player_hand,
             height as f64 - 170.0,
             width,
+            game_state.selected_card_index,
         );
         self.draw_attack_button(&self.ctx, width, height);
         self.draw_combat_log(&self.ctx);
@@ -185,6 +192,7 @@ impl CanvasApplication {
         hand: &BridgeHand,
         y_base: f64,
         width: u32,
+        selected_target: Option<usize>,
     ) {
         let card_w = 80.0;
         let card_h = 120.0;
@@ -192,7 +200,6 @@ impl CanvasApplication {
         let count = hand.cards.len();
         let total_w = (count as f64) * (card_w + spacing);
         let start_x = (width as f64 - total_w) / 2.0;
-        let selected_target = self.game_state.borrow().target_card_index;
 
         for (i, card) in hand.cards.iter().enumerate() {
             let x = start_x + (i as f64) * (card_w + spacing);
@@ -207,6 +214,7 @@ impl CanvasApplication {
         hand: &BridgeHand,
         y_base: f64,
         width: u32,
+        selected_player: Option<usize>,
     ) {
         let card_w = 80.0;
         let card_h = 120.0;
@@ -214,7 +222,6 @@ impl CanvasApplication {
         let count = hand.cards.len();
         let total_w = (count as f64) * (card_w + spacing);
         let start_x = (width as f64 - total_w) / 2.0;
-        let selected_player = self.game_state.borrow().selected_card_index;
 
         for (i, card) in hand.cards.iter().enumerate() {
             let x = start_x + (i as f64) * (card_w + spacing);
