@@ -4,7 +4,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
-                title: "Bevy 2D - Debug Mode".to_string(),
+                title: "Bevy 2D - Large Sprite".to_string(),
                 ..default()
             }),
             ..default()
@@ -28,27 +28,26 @@ fn setup(
     // Spawn a 2D camera
     commands.spawn((Camera2d::default(), Transform::from_xyz(0.0, 0.0, 10.0)));
 
-    // Spawn a bright neon green rectangle (definitely visible)
+    // Spawn a large colored square
     commands.spawn((
-        Mesh2d(meshes.add(Rectangle::new(200.0, 100.0))),
-        MeshMaterial2d(materials.add(Color::srgb(0.0, 1.0, 0.0))), // Neon green
+        Mesh2d(meshes.add(Rectangle::new(400.0, 400.0))),
+        MeshMaterial2d(materials.add(Color::srgb(0.2, 0.8, 0.2))),
         Transform::from_xyz(-250.0, 0.0, 0.0),
     ));
 
-    // Load sprite from assets
-    let image_handle =
-        asset_server.load("kenney_playing-cards-pack/PNG/Cards (large)/card_back.png");
+    // Load sprite - 64x64 pixels
+    let card_back = asset_server.load("kenney_playing-cards-pack/PNG/Cards (large)/card_back.png");
 
-    // Spawn sprite to the right with different size
+    // Spawn sprite with very large custom size to make small sprite visible
     commands.spawn((
         Sprite {
-            image: image_handle,
-            custom_size: Some(Vec2::new(1000.0, 1500.0)),
+            image: card_back,
+            custom_size: Some(Vec2::new(1200.0, 1200.0)), // Make tiny 64x64 sprite huge
             color: Color::srgb(1.0, 1.0, 1.0),
             ..default()
         },
-        Transform::from_xyz(250.0, 0.0, 0.0),
+        Transform::from_xyz(350.0, 0.0, 0.0),
     ));
 
-    println!("Spawned: green rectangle (left) + sprite (right)");
+    println!("Spawned: colored square (left) + ENLARGED sprite (right - 1200×1200)");
 }
