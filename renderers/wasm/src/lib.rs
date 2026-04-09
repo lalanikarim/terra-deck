@@ -70,7 +70,6 @@ impl CanvasApplication {
 
         self.draw_background(&self.ctx);
         self.draw_ui(&self.ctx, width, height, &game_state);
-        self.draw_attack_button(&self.ctx, width, height);
         self.draw_opponent_hand(&self.ctx, &game_state.opponent_hand, 50.0, width);
         self.draw_player_hand(
             &self.ctx,
@@ -78,6 +77,7 @@ impl CanvasApplication {
             height as f64 - 170.0,
             width,
         );
+        self.draw_attack_button(&self.ctx, width, height);
         self.draw_combat_log(&self.ctx);
     }
 
@@ -156,7 +156,7 @@ impl CanvasApplication {
         let h = height as f64;
 
         let btn_x = w / 2.0 - 80.0;
-        let btn_y = h - 110.0;
+        let btn_y = h - 80.0; // Moved down from h-110 to h-80 to be below player cards
         let btn_w = 160.0;
         let btn_h = 50.0;
 
