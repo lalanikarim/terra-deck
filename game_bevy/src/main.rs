@@ -16,10 +16,7 @@ fn main() {
         .run();
 }
 
-fn initialize(
-    mut commands: Commands,
-    cameras: Query<Entity, With<Camera2d>>,
-) {
+fn initialize(mut commands: Commands, cameras: Query<Entity, With<Camera2d>>) {
     for camera in cameras.iter() {
         commands.entity(camera).despawn();
     }
@@ -35,13 +32,13 @@ fn render_hand(
     if hand.len() == 0 {
         return;
     }
-    
+
     let total_width = (hand.len() - 1) as f32 * 90.0;
     let start_x = -total_width / 2.0;
-    
+
     for (i, card) in hand.cards.iter().enumerate() {
         let t = i as f32 / (hand.len() - 1) as f32;
-        
+
         let suit = match card.suit {
             game_core::Suit::Hearts => "card_hearts",
             game_core::Suit::Diamonds => "card_diamonds",
@@ -49,21 +46,35 @@ fn render_hand(
             game_core::Suit::Spades => "card_spades",
         };
         let rank = match card.rank {
-            game_core::Rank::Two => "02", game_core::Rank::Three => "03",
-            game_core::Rank::Four => "04", game_core::Rank::Five => "05",
-            game_core::Rank::Six => "06", game_core::Rank::Seven => "07",
-            game_core::Rank::Eight => "08", game_core::Rank::Nine => "09",
-            game_core::Rank::Ten => "10", game_core::Rank::Jack => "J",
-            game_core::Rank::Queen => "Q", game_core::Rank::King => "K",
+            game_core::Rank::Two => "02",
+            game_core::Rank::Three => "03",
+            game_core::Rank::Four => "04",
+            game_core::Rank::Five => "05",
+            game_core::Rank::Six => "06",
+            game_core::Rank::Seven => "07",
+            game_core::Rank::Eight => "08",
+            game_core::Rank::Nine => "09",
+            game_core::Rank::Ten => "10",
+            game_core::Rank::Jack => "J",
+            game_core::Rank::Queen => "Q",
+            game_core::Rank::King => "K",
             game_core::Rank::Ace => "A",
         };
-        
-        let texture = asset_server.load(format!("kenney_playing-cards-pack/PNG/Cards (large)/{}_{}.png", suit, rank));
-        
-        commands.spawn(Sprite {
-            image: texture,
-            custom_size: Some(Vec2::new(100.0, 150.0)),
-            ..default()
-        });
+
+        let texture = asset_server.load(format!(
+            "kenney_playing-cards-pack/PNG/Cards (large)/{}_{}.png",
+            suit, rank
+        ));
+
+        // Use the calculated position for fan layout
+        let x = start_x + t * total_width;
+        commands.spawn((
+            Sprite {
+                image: texture,
+                custom_size: Some(Vec2::new(100.0, 150.0)),
+                ..default()
+            },
+            Transform::from_xyz(x, 0.0, 1.0), // Spawn at Z=1 so camera can see it
+        ));
     }
 }
