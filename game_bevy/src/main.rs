@@ -14,9 +14,8 @@ fn main() {
 }
 
 fn setup(
+    asset_server: Res<AssetServer>,
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
     mut cameras: Query<&mut Transform, With<Camera2d>>,
 ) {
     // Position the 2D camera at Z=10 (in front) to view sprites at Z=0
@@ -26,12 +25,19 @@ fn setup(
         camera_transform.translation.z = 10.0;
     }
 
-    // Spawn green rectangle (as working prototype)
+    // Load card sprite from project assets folder
+    let image_handle =
+        asset_server.load("kenney_playing-cards-pack/PNG/Cards (medium)/card_back.png");
+
+    // Spawn sprite with custom size
     commands.spawn((
-        Mesh2d(meshes.add(Rectangle::new(2.0, 1.2))),
-        MeshMaterial2d(materials.add(Color::srgb(0.2, 0.8, 0.2))),
-        Transform::from_xyz(0.0, 0.0, 0.0),
+        Sprite {
+            image: image_handle,
+            custom_size: Some(Vec2::new(300.0, 450.0)),
+            ..default()
+        },
+        Transform::default(),
     ));
 
-    println!("✅ 2D scene ready - Green rectangle visible");
+    println!("✅ Sprite loaded successfully!");
 }

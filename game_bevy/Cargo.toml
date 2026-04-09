@@ -4,8 +4,4 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = "0.18"
-
-[[bin]]
-name = "game_bevy"
-path = "src/main.rs"
+bevy = "0.18.1"
