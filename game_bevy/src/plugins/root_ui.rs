@@ -1,8 +1,21 @@
-//! Root UI Container - centers all game UI elements horizontally
+//! Root UI Container - holds game UI elements
 
 use bevy::prelude::*;
 
-/// Spawn root container that holds title and combat log as children
+// Color helpers
+fn black() -> Color {
+    Color::srgb(0.0, 0.0, 0.0)
+}
+
+fn white() -> Color {
+    Color::srgb(1.0, 1.0, 1.0)
+}
+
+fn lightgray() -> Color {
+    Color::srgb(0.85, 0.85, 0.85)
+}
+
+/// Spawn UI elements (title and combat log)
 pub fn spawn_root_ui_container(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -11,39 +24,37 @@ pub fn spawn_root_ui_container(
     let title_font = asset_server.load("fonts/FiraSans-Bold.ttf");
     let log_font = asset_server.load("fonts/FiraSans-Bold.ttf");
 
-    // Spawn title as child with its own centering
-    let title_centering = (
+    // Title element - white text
+    let title_element = (
+        Text::new("Terra-Deck".to_string()),
+        TextFont {
+            font: title_font,
+            font_size: 52.0,
+            ..Default::default()
+        },
+        TextColor(white()),
         Node {
-            width: Val::Auto,
             justify_content: JustifyContent::Center,
             align_items: AlignItems::Center,
             flex_direction: FlexDirection::Column,
             ..Default::default()
         },
-        children![(
-            Text::new("🃏 Terra-Deck 🃏".to_string()),
-            TextFont {
-                font: title_font,
-                font_size: 42.0,
-                ..Default::default()
-            },
-            TextColor(Color::srgb(0.0, 0.0, 0.0)),
-        )],
     );
 
-    // Spawn combat log element with its own centering  
+    // Combat log element - container at left edge, centered text inside
     let log_element = (
         Node {
             width: Val::Px(350.0),
             min_width: Val::Px(350.0),
             min_height: Val::Px(400.0),
+            margin: UiRect::all(Val::Px(10.0)),
             justify_content: JustifyContent::FlexStart,
             align_items: AlignItems::Center,  // Center content within container
             flex_direction: FlexDirection::Column,
             padding: UiRect::all(Val::Px(15.0)),
             ..Default::default()
         },
-        BackgroundColor(Color::srgb(0.85, 0.85, 0.85)),
+        BackgroundColor(lightgray()),
         children![(
             Text::new("COMBAT LOG".to_string()),
             TextFont {
@@ -51,21 +62,24 @@ pub fn spawn_root_ui_container(
                 font_size: 22.0,
                 ..Default::default()
             },
-            TextColor(Color::srgb(0.0, 0.0, 0.0)),
+            TextColor(black()),
         )],
     );
 
-    // Root container - full width, center children
+    // Root container - flex column layout
     commands.spawn((
         Node {
             display: Display::Flex,
             flex_direction: FlexDirection::Column,
             justify_content: JustifyContent::FlexStart,
-            align_items: AlignItems::Center,  // Center all children horizontally
+            align_items: AlignItems::Center,
             width: Val::Percent(100.0),  // Full width
             ..Default::default()
         },
-        children![(title_centering), (log_element)],
+        children![
+            title_element,
+            log_element,
+        ],
     ));
 }
 
