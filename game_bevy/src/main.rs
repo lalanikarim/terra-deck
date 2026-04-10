@@ -1,7 +1,9 @@
 use bevy::prelude::*;
+use game_bevy::plugins::combat_log_ui::render_combat_log_ui;
 use game_bevy::plugins::opponent_renderer::render_opponent_hand;
 use game_bevy::plugins::{
-    CardAssetPlugin, GameSessionPlugin, OpponentRendererPlugin, PlayerRendererPlugin,
+    CardAssetPlugin, CombatLogUiPlugin, GameSessionPlugin, OpponentRendererPlugin,
+    PlayerRendererPlugin,
 };
 
 fn main() {
@@ -13,12 +15,14 @@ fn main() {
             }),
             ..default()
         }))
+        .insert_resource(ClearColor(Color::srgb(1.0, 1.0, 1.0)))
         .add_plugins(CardAssetPlugin)
         .add_plugins(GameSessionPlugin)
         .add_plugins(PlayerRendererPlugin)
         .add_plugins(OpponentRendererPlugin)
+        .add_plugins(CombatLogUiPlugin)
         .add_systems(Startup, initialize)
-        .add_systems(Update, render_opponent_hand)
+        .add_systems(Update, (render_opponent_hand, render_combat_log_ui))
         .run();
 }
 
