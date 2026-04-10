@@ -497,6 +497,207 @@ commands.spawn((
 
 ---
 
+## Text UI Handling (Bevy 0.18)
+
+### Key Principles
+
+**Text entities must include TextFont with font handle**. A Text entity by itself has no style, so always pair it with TextFont and TextColor:
+
+```rust
+let font = asset_server.load("fonts/FiraSans-Bold.ttf");
+let text_font = TextFont {
+    font,
+    font_size: 28.0,
+    ..Default::default()
+};
+
+let text = Text::new("Hello World".to_string());
+let text_color = TextColor(Color::BLACK);
+
+let header = (text, text_font, text_color);
+```
+
+### Container with Child Text (Correct Pattern)
+
+**Spawn child text entity first, then container children**:
+
+```rust
+fn spawn_label(
+    commands: &mut Commands,
+    asset_server: &AssetServer,
+    text: &str,
+    font_size: f32,
+) -> Entity {
+    let font = asset_server.load("fonts/FiraSans-Bold.ttf");
+    commands.spawn((
+        Text::new(text.to_string()),
+        TextFont {
+            font,
+            font_size,
+            ..default()
+        },
+        TextColor(black()),
+    )).id()
+}
+
+/// Spawn container with text child
+let header_entity = spawn_label(&mut commands, &asset_server, "TITLE", 28.0);
+
+commands.spawn((
+    Node {
+        position_type: PositionType::Absolute,
+        left: Val::Px(10.0),
+        top: Val::Px(10.0),
+        ..default()
+    },
+    BackgroundColor(Color::srgb(0.85, 0.85, 0.85)),
+    Children::new(vec![header_entity]),
+));
+```
+
+### Using children! Macro (Correct Pattern)
+
+**The children! macro takes tuples of components, not nested children!**:
+
+```rust
+commands.spawn((
+    Node { /* container style */ },
+    BackgroundColor(Color::srgb(0.85, 0.85, 0.85)),
+    children![(  // Each item is a tuple of text components
+        Text::new("==== TITLE ====".to_string()),
+        TextFont {
+            font: font.clone(),
+            font_size: 28.0,
+            ..Default::default()
+        },
+        TextColor(black()),
+    )],
+));
+```
+
+### Common Pitfalls
+
+**❌ WRONG**: Putting TextFont and TextColor at parent level:
+```rust
+commands.spawn((
+    // ❌ This applies font/color to container, not text!
+    TextFont { font, font_size: 28.0 },
+    TextColor(Color::BLACK),
+    children![(Text::new("TITLE"))],
+));
+```
+
+**❌ WRONG**: Using children! with nested children!:
+```rust
+// ❌ Invalid - nested children! macros don't work
+
+children![
+    children![(Text::new("TITLE"))]
+]
+```
+
+**❌ WRONG**: Forgetting to clone font when using it multiple times:
+```rust
+// ❌ Font moved on first usage, can't reuse
+let text1 = (Text::new("A"), TextFont { font, .. });
+let text2 = (Text::new("B"), TextFont { font, .. }); // Error!
+
+// ✅ Correct - clone the font
+commands.spawn((
+    Text::new("A"),
+    TextFont { font: font.clone(), .. }
+));
+commands.spawn((
+    Text::new("B"),
+    TextFont { font: font.clone(), .. }
+));
+```
+
+### High-Contrast Text Pattern (Recommended)
+
+For text containers (like combat log, headers, labels):
+
+```rust
+// Color helpers
+fn black() -> Color {
+    Color::srgb(0.0, 0.0, 0.0)
+}
+
+fn lightgray() -> Color {
+    Color::srgb(0.85, 0.85, 0.85)
+}
+
+// Spawn container with high-contrast text
+commands.spawn((
+    Node {
+        position_type: PositionType::Absolute,
+        left: Val::Px(10.0),
+        top: Val::Px(10.0),
+        width: Val::Px(400.0),
+        min_height: Val::Px(100.0),
+        padding: UiRect::all(Val::Px(15.0)),
+        flex_direction: FlexDirection::Column,
+        row_gap: Val::Px(35.0),
+        ..Default::default()
+    },
+    BackgroundColor(lightgray()),
+    children![(
+        Text::new("=== COMBAT LOG ===".to_string()),
+        TextFont {
+            font: font.clone(),
+            font_size: 28.0,
+            ..Default::default()
+        },
+        TextColor(black()),
+    )],
+));
+```
+
+### Font Loading Patterns
+
+**Load from relative path (assets directory)**:
+```rust
+let font = asset_server.load("fonts/FiraSans-Bold.ttf");
+```
+
+**Load with absolute path for testing**:
+```rust
+use std::path::PathBuf;
+let font_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+    .join("assets")
+    .join("fonts")
+    .join("FiraSans-Bold.ttf");
+let font = asset_server.load(font_path.display().to_string());
+```
+
+### Entity Cleanup on Update
+
+When respawning entities every frame, collect entities first then despawn:
+
+```rust
+#[derive(Component)]
+pub struct CombatLogEntity;
+
+pub fn render_combat_log_ui(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    log_query: Query<Entity, With<CombatLogEntity>>,
+) {
+    // Collect entities first (avoiding despawn cycle warnings)
+    let entities_to_despawn: Vec<Entity> = log_query.iter().collect();
+    
+    // Queue despawns
+    for entity in entities_to_despawn {
+        commands.entity(entity).despawn();
+    }
+
+    // Spawn new entity
+    commands.spawn((/* ... */, CombatLogEntity));
+}
+```
+
+---
+
 ## Integration with game_core
 
 ### Wrapping game_core State as Bevy Resource
