@@ -24,7 +24,7 @@ pub fn spawn_root_ui_container(
     let title_font = asset_server.load("fonts/FiraSans-Bold.ttf");
     let log_font = asset_server.load("fonts/FiraSans-Bold.ttf");
 
-    // Title element - white text
+    // Title element - white text, centered
     let title_element = (
         Text::new("Terra-Deck".to_string()),
         TextFont {
@@ -41,15 +41,14 @@ pub fn spawn_root_ui_container(
         },
     );
 
-    // Combat log element - container at left edge, centered text inside
+    // Combat log element - at left with left margin, text centered within
     let log_element = (
         Node {
             width: Val::Px(350.0),
             min_width: Val::Px(350.0),
             min_height: Val::Px(400.0),
-            margin: UiRect::all(Val::Px(10.0)),
             justify_content: JustifyContent::FlexStart,
-            align_items: AlignItems::Center,  // Center content within container
+            align_items: AlignItems::Center,  // Content centered inside container
             flex_direction: FlexDirection::Column,
             padding: UiRect::all(Val::Px(15.0)),
             ..Default::default()
@@ -66,20 +65,33 @@ pub fn spawn_root_ui_container(
         )],
     );
 
-    // Root container - flex column layout
+    // Spawn title as top-level centered element
     commands.spawn((
         Node {
-            display: Display::Flex,
-            flex_direction: FlexDirection::Column,
-            justify_content: JustifyContent::FlexStart,
+            width: Val::Auto,
+            justify_content: JustifyContent::Center,
             align_items: AlignItems::Center,
-            width: Val::Percent(100.0),  // Full width
+            flex_direction: FlexDirection::Column,
             ..Default::default()
         },
-        children![
-            title_element,
-            log_element,
-        ],
+        children![(title_element)],
+    ));
+
+    // Spawn combat log as top-level element with left margin
+    // Use fixed position or margin to anchor to left
+    commands.spawn((
+        Node {
+            width: Val::Px(350.0),
+            min_width: Val::Px(350.0),
+            min_height: Val::Px(400.0),
+            margin: UiRect::all(Val::Px(10.0)),
+            justify_content: JustifyContent::FlexStart,
+            align_items: AlignItems::Center,
+            flex_direction: FlexDirection::Column,
+            padding: UiRect::all(Val::Px(15.0)),
+            ..Default::default()
+        },
+        children![(log_element)],
     ));
 }
 
