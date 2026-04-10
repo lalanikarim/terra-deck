@@ -35,7 +35,7 @@ fn create_opponent_hand_lines(game: &GameSession) -> Vec<Line<'static>> {
 /// Create a single hidden opponent card line
 fn create_opponent_card_line(_idx: usize, is_selected: bool) -> Line<'static> {
     let selection_marker = if is_selected { "←" } else { "" };
-    
+
     let line_str = format!(" [?]   ● (alive) {}", selection_marker);
 
     let style = if is_selected {
@@ -52,7 +52,8 @@ fn create_opponent_card_line(_idx: usize, is_selected: bool) -> Line<'static> {
 
 /// Create revealed opponent hand lines (shown at game over)
 pub fn create_revealed_opponent_lines(game: &GameSession) -> Vec<Line<'static>> {
-    game.opponent_hand.cards
+    game.opponent_hand
+        .cards
         .iter()
         .enumerate()
         .map(|(idx, card)| {

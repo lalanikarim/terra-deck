@@ -11,7 +11,11 @@ pub fn render(frame: &mut Frame, area: Rect, game: &GameSession) {
     let title = build_header_text(game);
 
     let paragraph = Paragraph::new(title)
-        .style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD))
+        .style(
+            Style::default()
+                .fg(Color::Cyan)
+                .add_modifier(Modifier::BOLD),
+        )
         .alignment(Alignment::Center)
         .block(Block::default());
 

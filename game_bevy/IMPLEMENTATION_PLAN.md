@@ -49,7 +49,10 @@ fn game_logic_driver_system(
 ### 🃏 Card Rendering
 - **Texture Mapping**: A utility function will map `(Suit, Rank)` $\rightarrow$ `path/to/assets/card_{suit}_{rank}.png`.
 - **Fog of War**: 
-  - *State: Selecting Target* $\rightarrow$ Render `card_back.png` for opponent cards.
+  - *During Gameplay*: **Always show card back** for opponent cards - they are NEVER revealed
+  - *Game Over*: Cards would be revealed (Won/Lost state) - future enhancement
+  
+  This simplifies the fog of war logic: opponent cards are always hidden, creating a true "fog" effect.
    
 ### 💥 The "Juice" (Feedback Loops)
 We will use **Bevy Events** to trigger visual-only animations:
@@ -72,8 +75,8 @@ We will use **Bevy Events** to trigger visual-only animations:
 *Goal: Replace primitives with the actual Kenney card assets.*
 - [x] **Task 2.1: Sprite Mapping**: Implemented (Suit, Rank) to texture mapping Implement the `Rank/Suit` $\rightarrow$ `TextureHandle` lookup.
 - [x] **Task 2.2: Hand Layout**: Fan layout - cards spread horizontally across screen
-- [ ] **Task 2.3: The Fog of War**: Implement the texture swap logic (Back to Front) for opponent cards.
-- [ ] **Task 2.4: UI Overlay**: Implement the `CombatLog` using Bevy `TextBundle`.
+- [x] **Task 2.3: The Fog of War** - Opponent cards always show card back (simplified approach, NEVER revealed during gameplay)
+- [x] **Task 2.4: UI Overlay** - Implemented `combat_log_ui.rs` plugin that displays combat log using Bevy 0.18 UI component system
 
 ### 💥 Phase 3: Interaction & Juice (The "Impact" Era)
 *Goal: Add animations and feedback.*

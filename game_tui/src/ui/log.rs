@@ -25,20 +25,21 @@ pub fn render(frame: &mut Frame, area: Rect, combat_log: &CombatLog) {
         Paragraph::new(visible)
     };
 
-    frame.render_widget(
-        paragraph.block(Block::default().title("Combat Log")),
-        area,
-    );
+    frame.render_widget(paragraph.block(Block::default().title("Combat Log")), area);
 }
 
 /// Style log entries based on content
 fn style_log_entry(entry: &str) -> Style {
     if entry.contains("YOU WON") {
-        Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)
+        Style::default()
+            .fg(Color::Green)
+            .add_modifier(Modifier::BOLD)
     } else if entry.contains("YOU LOST") {
         Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)
     } else if entry.contains("CRITICAL") {
-        Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
+        Style::default()
+            .fg(Color::Yellow)
+            .add_modifier(Modifier::BOLD)
     } else if entry.contains("died") || entry.contains("destroyed") {
         Style::default().fg(Color::Red)
     } else if entry.contains("Game started") {

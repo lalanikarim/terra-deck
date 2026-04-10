@@ -29,16 +29,12 @@ fn get_help_text_for_state(game: &GameSession) -> Line<'static> {
         crate::game_state::GameStateLoop::ConfirmAttack => {
             Line::from("Y Confirm attack | N Cancel")
         }
-        crate::game_state::GameStateLoop::ResolvingCombat |
-        crate::game_state::GameStateLoop::WaitingForOpponent => {
+        crate::game_state::GameStateLoop::ResolvingCombat
+        | crate::game_state::GameStateLoop::WaitingForOpponent => {
             Line::from("Waiting for combat resolution...")
         }
-        crate::game_state::GameStateLoop::GameOver => {
-            Line::from("R Restart game | Q Quit")
-        }
-        _ => {
-            Line::from("←→ Navigate | Enter Confirm | q Quit")
-        }
+        crate::game_state::GameStateLoop::GameOver => Line::from("R Restart game | Q Quit"),
+        _ => Line::from("←→ Navigate | Enter Confirm | q Quit"),
     }
 }
 

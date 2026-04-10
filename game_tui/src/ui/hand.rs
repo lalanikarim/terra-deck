@@ -30,9 +30,14 @@ pub fn render_player_hand(frame: &mut Frame, area: Rect, game: &GameSession) {
 }
 
 /// Create a single card line for display
-fn create_card_line(card: &game_core::Card, display_idx: usize, is_selected: bool) -> Line<'static> {
+fn create_card_line(
+    card: &game_core::Card,
+    display_idx: usize,
+    is_selected: bool,
+) -> Line<'static> {
     let selection_marker = if is_selected { "← " } else { "  " };
-    let card_str = format!("{} {} HP:{}/{}",
+    let card_str = format!(
+        "{} {} HP:{}/{}",
         get_suit_char(card.suit),
         get_rank_str(card.rank),
         card.hp,

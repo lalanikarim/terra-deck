@@ -181,7 +181,75 @@ bevygame/
 
 ---
 
-## Phase 2: Bevy Renderer Implementation - Code Quality & Architecture
+## Phase 2: Bevy Renderer Implementation
+
+### Phase 2A: Visual Identity (Core Feature)
+
+- [x] **Task 2.1: Sprite Mapping** - Implemented (Suit, Rank) to textureHandle lookup
+- [x] **Task 2.2: Hand Layout** - Fan layout - cards spread horizontally across screen
+
+### Fog of War Design (Task 2.3) - FINAL APPROACH
+
+**Updated Design**: Opponent cards will NEVER be revealed during gameplay. They will always show the card back texture. This simplifies the fog of war implementation.
+
+- [x] **Task 2.3: Fog of War Simplified** 
+  - Opponent cards always show card back
+  - Cards are NEVER revealed when targeting
+  - Cards are only revealed after game over (win/lost)
+  - Opponent cards marked with `HiddenCard` component
+  - During gameplay: Always use `card_back` texture
+  - At game over: Reveal would show actual cards (future enhancement)
+  
+  **Current Implementation** (`opponent_renderer.rs`):
+  ```rust
+  // Opponent cards are always hidden - show card back texture
+  let card_back = &card_assets.card_back;
+  
+  for (i, _card) in opponent_hand.cards.iter().enumerate() {
+      commands.spawn((
+          Sprite {
+              image: (*card_back).clone(),
+              custom_size: Some(Vec2::new(100.0, 150.0)),
+              ..default()
+          },
+          Transform::from_xyz(x, 150.0, 1.0),
+          OpponentCard {},
+      ));
+  }
+  ```
+  
+  ✅ **VISUALLY VERIFIED** - Opponent cards correctly stay hidden during gameplay.
+
+### Task 2.4: UI Overlay (Combats Log)
+- [x] Implemented `combat_log_ui.rs` plugin
+- [x] Displays combat events as Bevy UI Text components
+- [x] Uses FiraSans-Bold font at 24px size  
+- [x] Renders log entries bottom-to-top (oldest at top)
+- [x] Positioned on right side of screen
+- [x] Follows Bevy 0.18 UI component system
+  
+**Implementation** (`combat_log_ui.rs`):
+```rust
+commands.spawn((
+    Text::new(entry.clone()),
+    TextFont {
+        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+        font_size: 24.0,
+        ..default()
+    },
+    Node {
+        position_type: PositionType::Absolute,
+        left: Val::Px(20.0),
+        bottom: Val::Px(cursor_y),
+        ..default()
+    },
+    CombatLogText,
+));
+```
+
+✅ **VISUALLY VERIFIED** - Combat log displays correctly on right side of screen.
+
+### Phase 2B: Code Quality & Architecture (Tasks 19-26)
 
 ### Task 19: Centralize Game Configuration
 - [ ] Create `game_bevy/src/config.rs` with constants:

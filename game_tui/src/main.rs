@@ -142,11 +142,13 @@ fn handle_key(game: &mut GameSession, key: KeyEvent) -> Option<bool> {
 fn move_selection_left(game: &mut GameSession) {
     if game.loop_state == GameStateLoop::SelectPlayerCard {
         if let Some(_idx) = game.selected_player_card.index {
-            game.selected_player_card.previous(game.player_hand.len().saturating_sub(1));
+            game.selected_player_card
+                .previous(game.player_hand.len().saturating_sub(1));
         }
     } else if game.loop_state == GameStateLoop::SelectOpponentTarget {
         if let Some(_idx) = game.selected_opponent_card.index {
-            game.selected_opponent_card.previous(game.opponent_hand.len().saturating_sub(1));
+            game.selected_opponent_card
+                .previous(game.opponent_hand.len().saturating_sub(1));
         }
     }
 }
@@ -160,7 +162,8 @@ fn move_selection_right(game: &mut GameSession) {
         if game.selected_player_card.index.is_none() {
             game.selected_player_card = game_core::turn_state::SelectedCard::new(0);
         }
-        game.selected_player_card.next(game.player_hand.len().saturating_sub(1));
+        game.selected_player_card
+            .next(game.player_hand.len().saturating_sub(1));
     } else if game.loop_state == GameStateLoop::SelectOpponentTarget {
         if game.opponent_hand.is_empty() {
             return;
@@ -168,7 +171,8 @@ fn move_selection_right(game: &mut GameSession) {
         if game.selected_opponent_card.index.is_none() {
             game.selected_opponent_card = game_core::turn_state::SelectedCard::new(0);
         }
-        game.selected_opponent_card.next(game.opponent_hand.len().saturating_sub(1));
+        game.selected_opponent_card
+            .next(game.opponent_hand.len().saturating_sub(1));
     }
 }
 
@@ -206,9 +210,10 @@ fn handle_enter(game: &mut GameSession) {
 
 /// Confirm attack and resolve combat
 fn confirm_attack(game: &mut GameSession) {
-    if let (Some(player_idx), Some(opponent_idx)) =
-        (game.selected_player_card.index, game.selected_opponent_card.index)
-    {
+    if let (Some(player_idx), Some(opponent_idx)) = (
+        game.selected_player_card.index,
+        game.selected_opponent_card.index,
+    ) {
         // Ensure indices are valid
         let valid_player_idx = player_idx.min(game.player_hand.len().saturating_sub(1));
         let valid_opponent_idx = opponent_idx.min(game.opponent_hand.len().saturating_sub(1));

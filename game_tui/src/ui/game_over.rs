@@ -16,11 +16,13 @@ pub fn render_game_over(frame: &mut Frame, area: Rect, game: &GameSession) {
     };
 
     let title_style = Style::default()
-        .fg(if game.game_over_result == Some(game_core::GameResult::Won) {
-            Color::Green
-        } else {
-            Color::Red
-        })
+        .fg(
+            if game.game_over_result == Some(game_core::GameResult::Won) {
+                Color::Green
+            } else {
+                Color::Red
+            },
+        )
         .add_modifier(Modifier::BOLD);
 
     let mut lines = vec![Line::from(result_text).style(title_style)];
@@ -53,15 +55,15 @@ pub fn render_game_over(frame: &mut Frame, area: Rect, game: &GameSession) {
     lines.push(Line::from(""));
     lines.push(Line::from("Press 'R' to restart or 'Q' to quit"));
 
-    let paragraph = Paragraph::new(lines)
-        .block(Block::default().title("=== GAME OVER ==="));
+    let paragraph = Paragraph::new(lines).block(Block::default().title("=== GAME OVER ==="));
 
     frame.render_widget(paragraph, area);
 }
 
 /// Create revealed opponent hand lines
 fn create_revealed_opponent_lines(game: &GameSession) -> Vec<Line<'static>> {
-    game.opponent_hand.cards
+    game.opponent_hand
+        .cards
         .iter()
         .enumerate()
         .map(|(idx, card)| {
