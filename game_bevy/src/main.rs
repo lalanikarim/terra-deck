@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use game_bevy::plugins::opponent_renderer::render_opponent_hand;
 use game_bevy::plugins::{
     CardAssetPlugin, CombatLogUiPlugin, GameSessionPlugin, OpponentRendererPlugin,
-    PlayerRendererPlugin, TitleUiPlugin,
+    PlayerRendererPlugin, RootUiContainerPlugin, TitleUiPlugin,
 };
 
 fn main() {
@@ -20,6 +20,7 @@ fn main() {
         .add_plugins(OpponentRendererPlugin)
         .add_plugins(CombatLogUiPlugin)
         .add_plugins(TitleUiPlugin)
+        .add_plugins(RootUiContainerPlugin)
         .add_systems(Startup, initialize)
         .add_systems(Update, render_opponent_hand)
         .run();
@@ -29,6 +30,6 @@ fn initialize(mut commands: Commands, cameras: Query<Entity, With<Camera2d>>) {
     for camera in cameras.iter() {
         commands.entity(camera).despawn();
     }
-    // Use default white background (ClearColor not set)
+    // No ClearColor set - default background
     commands.spawn((Camera2d::default(), Transform::from_xyz(0.0, 0.0, 10.0)));
 }
