@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 use game_bevy::plugins::opponent_renderer::render_opponent_hand;
 use game_bevy::plugins::{
-    CardAssetPlugin, CombatLogUiPlugin, GameSessionPlugin, OpponentRendererPlugin,
-    PlayerRendererPlugin, RootUiContainerPlugin, TitleUiPlugin,
+    CardAssetPlugin, GameSessionPlugin, LogContainerUiPlugin,
+    OpponentRendererPlugin, PlayerRendererPlugin, RootUiContainerPlugin, TitleUiPlugin,
 };
 
 fn main() {
@@ -18,8 +18,8 @@ fn main() {
         .add_plugins(GameSessionPlugin)
         .add_plugins(PlayerRendererPlugin)
         .add_plugins(OpponentRendererPlugin)
-        .add_plugins(CombatLogUiPlugin)
         .add_plugins(TitleUiPlugin)
+        .add_plugins(LogContainerUiPlugin)
         .add_plugins(RootUiContainerPlugin)
         .add_systems(Startup, initialize)
         .add_systems(Update, render_opponent_hand)
