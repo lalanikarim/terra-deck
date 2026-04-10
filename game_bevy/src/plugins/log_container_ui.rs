@@ -12,10 +12,7 @@ fn lightgray() -> Color {
 }
 
 /// Spawn the combat log container
-pub fn spawn_log_container(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-) {
+pub fn spawn_log_container(mut commands: Commands, asset_server: Res<AssetServer>) {
     let font = asset_server.load("fonts/FiraSans-Bold.ttf");
 
     commands.spawn((

@@ -8,10 +8,7 @@ fn white() -> Color {
 }
 
 /// Spawn the game title element
-pub fn spawn_title(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-) {
+pub fn spawn_title(mut commands: Commands, asset_server: Res<AssetServer>) {
     let font = asset_server.load("fonts/FiraSans-Bold.ttf");
 
     commands.spawn((
