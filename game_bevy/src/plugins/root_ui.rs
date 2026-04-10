@@ -24,31 +24,34 @@ pub fn spawn_root_ui_container(
     let title_font = asset_server.load("fonts/FiraSans-Bold.ttf");
     let log_font = asset_server.load("fonts/FiraSans-Bold.ttf");
 
-    // Title element - white text, centered
-    let title_element = (
-        Text::new("Terra-Deck".to_string()),
-        TextFont {
-            font: title_font,
-            font_size: 52.0,
-            ..Default::default()
-        },
-        TextColor(white()),
+    // Spawn title element - white text, centered
+    commands.spawn((
         Node {
             justify_content: JustifyContent::Center,
             align_items: AlignItems::Center,
             flex_direction: FlexDirection::Column,
             ..Default::default()
         },
-    );
+        children![(
+            Text::new("Terra-Deck".to_string()),
+            TextFont {
+                font: title_font,
+                font_size: 52.0,
+                ..Default::default()
+            },
+            TextColor(white()),
+        )],
+    ));
 
-    // Combat log element - at left with left margin, text centered within
-    let log_element = (
+    // Spawn combat log as separate element with left margin
+    commands.spawn((
         Node {
             width: Val::Px(350.0),
             min_width: Val::Px(350.0),
             min_height: Val::Px(400.0),
+            margin: UiRect::all(Val::Px(10.0)),
             justify_content: JustifyContent::FlexStart,
-            align_items: AlignItems::Center,  // Content centered inside container
+            align_items: AlignItems::Center,
             flex_direction: FlexDirection::Column,
             padding: UiRect::all(Val::Px(15.0)),
             ..Default::default()
@@ -63,35 +66,6 @@ pub fn spawn_root_ui_container(
             },
             TextColor(black()),
         )],
-    );
-
-    // Spawn title as top-level centered element
-    commands.spawn((
-        Node {
-            width: Val::Auto,
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
-            flex_direction: FlexDirection::Column,
-            ..Default::default()
-        },
-        children![(title_element)],
-    ));
-
-    // Spawn combat log as top-level element with left margin
-    // Use fixed position or margin to anchor to left
-    commands.spawn((
-        Node {
-            width: Val::Px(350.0),
-            min_width: Val::Px(350.0),
-            min_height: Val::Px(400.0),
-            margin: UiRect::all(Val::Px(10.0)),
-            justify_content: JustifyContent::FlexStart,
-            align_items: AlignItems::Center,
-            flex_direction: FlexDirection::Column,
-            padding: UiRect::all(Val::Px(15.0)),
-            ..Default::default()
-        },
-        children![(log_element)],
     ));
 }
 
